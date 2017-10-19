@@ -18,6 +18,8 @@ public class Driver {
 		UpdateScreen updateScr = new UpdateScreen();
 		ReportScreen reportScr = new ReportScreen();
 		
+		loginScr.setVisible(true);
+		
 	}
 
 }

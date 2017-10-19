@@ -1,4 +1,7 @@
 import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 
 /**
  * 
@@ -8,7 +11,7 @@ import java.util.*;
  * @author trieu
  *
  */
-public class ChatScreen {
+public class ChatScreen extends JFrame implements ActionListener {
 	
 	/**
 	 * 
@@ -42,6 +45,12 @@ public class ChatScreen {
 	private ArrayList<String> findMatch(String inputQuestion, ArrayList<String> questionList) {
 		ArrayList<String> matchedQuestions = new ArrayList<String>();
 		return matchedQuestions;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }

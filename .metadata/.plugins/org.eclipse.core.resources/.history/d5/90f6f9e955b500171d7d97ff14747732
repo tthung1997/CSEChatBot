@@ -1,0 +1,114 @@
+import java.util.*;
+import java.sql.*;
+
+/**
+ * 
+ */
+
+/**
+ * @author trieu
+ *
+ */
+
+
+public class DataProcessor {
+	public static void main(String [] args) throws SQLException {
+	//declare the JDBC objects.
+	String connectionUrl="jdbc:mysql://cse.unl.edu:3306/ziyunw";
+	String username="ziyunw";
+	String password="I_Uv4Z";
+	Connection con= null;
+	Statement stmt= null;
+	ResultSet rs= null;
+	try {
+		Class.forName("com.mysql.jdbc.Driver");
+		con= DriverManager.getConnection(connectionUrl, username, password);
+		if(con== null) {
+			System.out.print("1");
+		}
+		stmt=con.createStatement();
+		//create and execute an SQL statement statement
+		 rs.getStatement().executeQuery("select * from QA");
+		System.out.println("123");
+		con.close();
+	}catch(Exception e) {
+		
+	}finally {
+		if (rs!= null) {
+			try {
+				rs.close();
+			}catch(Exception e){
+				
+			}
+		}
+		if (stmt!= null) {
+			try {
+				stmt.close();
+			}catch(Exception e){
+				
+			}
+		}if (con!= null) {
+			try {
+				con.close();
+			}catch(Exception e){
+				
+			}
+		}
+	}
+	
+	}
+	/**
+	 * @return
+	 */
+	public static ArrayList<String> getQuestions() {
+		ArrayList<String> questions = new ArrayList<String>();
+		return questions;
+	}
+	
+	/**
+	 * @param questionID
+	 * @return
+	 */
+	public static String getAnswer(int questionID) {
+		String answer = "";
+		return answer;
+	}
+	
+	/**
+	 * @param question
+	 * @param answer
+	 * @return
+	 */
+	public static boolean insertQA(String question, String answer) {
+		return true;
+	}
+	
+	/**
+	 * @param userID
+	 * @param report
+	 * @return
+	 */
+	public static boolean insertReport(int userID, String report) {
+		return true;
+	}
+	
+	/**
+	 * @param username
+	 * @return
+	 */
+	public static String getPassword(String username) {
+		String password = "";
+		return password;
+	}
+	
+	/**
+	 * @param username
+	 * @return
+	 */
+	public static String getRole(String username) {
+		String role = "";
+		return role;
+	}
+	
+}
+

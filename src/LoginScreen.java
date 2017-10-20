@@ -41,32 +41,27 @@ public class LoginScreen extends JFrame implements ActionListener {
 
 		//Labels
 		usernameLabel = new JLabel("Username:");
-		usernameLabel.setBounds(30, 25, 100, 20);
+		usernameLabel.setBounds(30, 25, 80, 20);
 		panel.add(usernameLabel);
 		passwordLabel = new JLabel("Password:");
-		passwordLabel.setBounds(30, 55, 100, 20);
+		passwordLabel.setBounds(30, 55, 80, 20);
 		panel.add(passwordLabel);
 
 		//TextFields
 		usernameText = new JTextField();
-		usernameText.setBounds(150, 25, 180, 20);
+		usernameText.setBounds(120, 25, 180, 20);
 		panel.add(usernameText);
-		passwordText = new JTextField();
-		passwordText.setBounds(150, 55, 180, 20);
+		passwordText = new JPasswordField();
+		passwordText.setBounds(120, 55, 180, 20);
 		passwordText.addActionListener(this);
 		panel.add(passwordText);
 
 		//Buttons
 		loginButton = new JButton("Login");
 		loginButton.setFont(new Font("Arial", Font.PLAIN, 15));
-		loginButton.setBounds(150, 85, 90, 45);
+		loginButton.setBounds(120, 85, 90, 45);
 		panel.add(loginButton);
 		loginButton.addActionListener(this);
-		exitButton = new JButton("Exit");
-		exitButton.setFont(new Font("Arial", Font.PLAIN, 15));
-		exitButton.setBounds(250, 85, 90, 45);
-		panel.add(exitButton);
-		exitButton.addActionListener(this);
 		
 		contentPane.add(panel);
 		pack();
@@ -86,9 +81,8 @@ public class LoginScreen extends JFrame implements ActionListener {
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
-		
+	public void actionPerformed(ActionEvent e) {
+		// TODO
 	}
 	
 }

@@ -41,7 +41,7 @@ public class DataProcessor {
 	 * @param report
 	 * @return
 	 */
-	public static boolean insertReport(int userID, String report) {
+	public static boolean insertReport(String username, String report) {
 		return true;
 	}
 	

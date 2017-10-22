@@ -1,5 +1,10 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
@@ -12,57 +17,103 @@ import javax.swing.*;
  */
 public class LoginScreen extends JFrame implements ActionListener {
 
+	private static final String LOGIN = "login";
+	private static final String REPORT = "report";
 	private String username;
-	private String password;
 	private String role;
+	private ChatScreen chatScr;
+	private ReportScreen reportScr;
 	
 	private JLabel usernameLabel;
 	private JLabel passwordLabel;
+	private JLabel messageLabel;
 	private JTextField usernameText;
-	private JTextField passwordText;
+	private JPasswordField passwordText;
 	private JButton loginButton;
-	private JButton exitButton;
+	private JButton reportButton;
 	
 	/**
+	 * @throws IOException 
 	 * 
 	 */
-	public LoginScreen() {
+	public LoginScreen() throws IOException {
 		
 		//Set frame
 		setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
-		setTitle("Login");
+		setTitle("CSE CHATBOT - LOGIN");
 		setResizable(false);
 		Container contentPane = getContentPane();
 		
 		//Create panel
 		JPanel panel = new JPanel();
-		panel.setLayout(null);
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		panel.setPreferredSize (new Dimension(600, 400));
+		panel.setBorder(BorderFactory.createEmptyBorder(50, 80, 50, 80));
 
-		//Labels
-		usernameLabel = new JLabel("Username:");
-		usernameLabel.setBounds(30, 25, 80, 20);
-		panel.add(usernameLabel);
-		passwordLabel = new JLabel("Password:");
-		passwordLabel.setBounds(30, 55, 80, 20);
-		panel.add(passwordLabel);
-
-		//TextFields
-		usernameText = new JTextField();
-		usernameText.setBounds(120, 25, 180, 20);
-		panel.add(usernameText);
-		passwordText = new JPasswordField();
-		passwordText.setBounds(120, 55, 180, 20);
-		passwordText.addActionListener(this);
-		panel.add(passwordText);
-
-		//Buttons
-		loginButton = new JButton("Login");
-		loginButton.setFont(new Font("Arial", Font.PLAIN, 15));
-		loginButton.setBounds(120, 85, 90, 45);
-		panel.add(loginButton);
-		loginButton.addActionListener(this);
+		//CSE image
+		BufferedImage csePicture = ImageIO.read(new File("Images/cse.png"));
+		JLabel picLabel = new JLabel(new ImageIcon(csePicture));
+		picLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		panel.add(picLabel);
+		panel.add(Box.createRigidArea(new Dimension(0, 40)));
 		
+		//Message Label
+		messageLabel = new JLabel(" ");
+		messageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		panel.add(messageLabel);
+		
+		//Text panel
+		JPanel textPanel = new JPanel();
+		textPanel.setLayout(new SpringLayout());
+		textPanel.setBorder(BorderFactory.createEmptyBorder(10, 90, 0, 90));
+		
+		//Username label
+		usernameLabel = new JLabel("USERNAME:", JLabel.TRAILING);
+		textPanel.add(usernameLabel);
+		
+		//Username Field
+		usernameText = new JTextField(10);
+		usernameText.setHorizontalAlignment(JTextField.CENTER);
+		usernameLabel.setLabelFor(usernameText);
+		textPanel.add(usernameText);
+		
+		//Password label
+		passwordLabel = new JLabel("PASSWORD:", JLabel.TRAILING);
+		textPanel.add(passwordLabel);
+
+		//Password Field
+		passwordText = new JPasswordField(10);
+		passwordText.setHorizontalAlignment(JTextField.CENTER);
+		passwordText.addActionListener(this);
+		passwordText.setActionCommand(LOGIN);
+		passwordLabel.setLabelFor(passwordText);
+		textPanel.add(passwordText);
+
+		SpringUtilities.makeCompactGrid(textPanel, 2, 2, 6, 6, 20, 20);
+		
+		panel.add(textPanel);
+		panel.add(Box.createRigidArea(new Dimension(0, 10)));
+		
+		//Buttons panel
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
+		
+		//Login Button
+		loginButton = new JButton("LOGIN");
+		loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		loginButton.addActionListener(this);
+		loginButton.setActionCommand(LOGIN);
+		buttonPanel.add(loginButton);
+		buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
+		
+		//Report Button
+		reportButton = new JButton("REPORT");
+		reportButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		reportButton.addActionListener(this);
+		reportButton.setActionCommand(REPORT);
+		buttonPanel.add(reportButton);
+		
+		panel.add(buttonPanel);
 		contentPane.add(panel);
 		pack();
 		setLocationRelativeTo(null);
@@ -72,17 +123,55 @@ public class LoginScreen extends JFrame implements ActionListener {
 	/**
 	 * @return
 	 */
-	private boolean verify() {
-		String realPassword = DataProcessor.getPassword(this.username);
-		if (realPassword.compareTo(this.password) != 0)
-			return false;
-		this.role = DataProcessor.getRole(this.username);
-		return true;
+	private boolean isCorrectPassword(String inputUsername, String inputPassword) {
+		String realPassword = DataProcessor.getPassword(inputUsername);
+		if (realPassword.equals(inputPassword))
+			return true;
+		else return false;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO
+		String cmd = e.getActionCommand();
+
+		if (LOGIN.equals(cmd)) {
+			String inputUsername = usernameText.getText();
+			String inputPassword = new String(passwordText.getPassword());
+			if (isCorrectPassword(inputUsername, inputPassword)) {
+				this.username = inputUsername;
+				this.role = DataProcessor.getRole(this.username);
+				this.setVisible(false);
+				chatScr.appearFor(this.role);
+			}
+			else {
+				messageLabel.setText("Invalid password. Try again.");
+			}
+		}
+		else {
+			this.setVisible(false);
+			reportScr.appearFrom(this);
+		}
+	}
+
+	/**
+	 * @param charScr the charScr to set
+	 */
+	public void setChatScr(ChatScreen chatScr) {
+		this.chatScr = chatScr;
+	}
+
+	/**
+	 * @param reportScr the reportScr to set
+	 */
+	public void setReportScr(ReportScreen reportScr) {
+		this.reportScr = reportScr;
+	}
+
+	/**
+	 * @return the username
+	 */
+	public String getUsername() {
+		return username;
 	}
 	
 }

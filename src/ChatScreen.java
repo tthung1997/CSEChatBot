@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -22,6 +23,8 @@ public class ChatScreen extends JFrame implements ActionListener {
 	private static final String REPORT = "report";
 	private static final String UPDATE = "update";
 	
+	private ArrayList<String> badWords;
+	
 	private LoginScreen loginScr;
 	private ReportScreen reportScr;
 	private UpdateScreen updateScr;
@@ -38,6 +41,15 @@ public class ChatScreen extends JFrame implements ActionListener {
 	 * 
 	 */
 	public ChatScreen() throws IOException {
+		
+		//Read bad words
+		badWords = new ArrayList<String>();
+		Scanner scnr = new Scanner(new File("Data/BadWords.txt"));
+		while (scnr.hasNextLine()) {
+			String line = scnr.nextLine();
+			badWords.add(line);
+		}
+		scnr.close();
 		
 		//Set frame
 		setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
@@ -119,12 +131,44 @@ public class ChatScreen extends JFrame implements ActionListener {
 	}
 	
 	/**
+	 * @param word
+	 * @return
+	 */
+	private String wordProcessing(String word) {
+		String processedWord = new String(word.toLowerCase());
+		if (badWords.contains(processedWord)) {
+			processedWord = "";
+		}
+		else {
+			int len = processedWord.length();
+			if (len > 3 && processedWord.substring(len - 3, len).equals("ing")) {
+				processedWord = processedWord.substring(0, len - 3);
+			}
+			else if (len > 2 && word.substring(len - 2, len).equals("ed")) {
+				processedWord = processedWord.substring(0, len - 2);
+			}
+		}
+		return processedWord;
+	}
+	
+	/**
 	 * @param text
 	 * @return
 	 */
-	private String textProcessing(String text) {
-		//TODO 
-		String processedText = "";
+	private ArrayList<String> textProcessing(String text) {
+		//TODO
+		String copiedText = new String(text);
+		ArrayList<String> processedText = new ArrayList<String>();
+		
+		for(int i = 0; i < text.length(); i++) 
+			if (Character.isLetter(text.charAt(i)) 
+				|| Character.isDigit(text.charAt(i))
+				|| text.charAt(i) == ' ') 
+				copiedText += text.charAt(i);
+		
+		String[] words = copiedText.split(" ");
+		
+		
 		return processedText;
 	}
 	

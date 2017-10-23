@@ -1,4 +1,5 @@
 import java.util.*;
+import java.sql.*;
 
 /**
  * 
@@ -8,7 +9,43 @@ import java.util.*;
  * @author trieu
  *
  */
+
+
 public class DataProcessor {
+	static final String connectionUrl="jdbc:mysql://cse.unl.edu:3306/ziyunw";
+	static final String DB_URL = "com.mysql.jdbc.Driver";
+	static String username="ziyunw";
+	static String password="I_Uv4Z";
+	public static void main(String [] args) throws SQLException {
+		Statement stmt = null;
+	//declare the JDBC objects.
+	
+	try {
+		Class.forName("com.mysql.jdbc.Driver");
+		
+		Connection con= DriverManager.getConnection(connectionUrl, username, password);
+		
+		stmt= con.createStatement();
+		String sql;
+		sql= "SELECT Question FROM QA";
+		ResultSet rs= stmt.executeQuery(sql);
+		while ( rs.next()) {
+			String question= rs.getString("Question");
+			System.out.println("Question"+question);
+		}
+		rs.close();
+		stmt.close();
+		con.close();
+	}catch(SQLException se) {
+		se.printStackTrace();
+	}catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}finally {
+		
+	}
+	}
+	
 	
 	/**
 	 * @return
@@ -64,3 +101,4 @@ public class DataProcessor {
 	}
 	
 }
+

@@ -3,7 +3,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -24,6 +23,8 @@ public class ChatScreen extends JFrame implements ActionListener {
 	private static final String UPDATE = "update";
 	
 	private ArrayList<String> badWords;
+	private ArrayList<String> questionList;
+	private ArrayList< ArrayList<String> > processedQuestionList;
 	
 	private LoginScreen loginScr;
 	private ReportScreen reportScr;
@@ -46,10 +47,13 @@ public class ChatScreen extends JFrame implements ActionListener {
 		badWords = new ArrayList<String>();
 		Scanner scnr = new Scanner(new File("Data/BadWords.txt"));
 		while (scnr.hasNextLine()) {
-			String line = scnr.nextLine();
+			String line = scnr.nextLine().toLowerCase().trim();
 			badWords.add(line);
 		}
 		scnr.close();
+		
+		//Process question list
+		this.getQuestionList();
 		
 		//Set frame
 		setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
@@ -102,7 +106,8 @@ public class ChatScreen extends JFrame implements ActionListener {
         //Chat box
         chatBox = new JTextArea();
         chatBox.setEditable(false);
-        chatBox.setFont(new Font("Serif", Font.PLAIN, 15));
+        chatBox.setWrapStyleWord(true);
+        chatBox.setFont(new Font("Courier", Font.PLAIN, 12));
         chatBox.setLineWrap(true);
         chatBox.setMargin(new Insets(10, 10, 10, 10));
         chatPanel.add(new JScrollPane(chatBox), BorderLayout.CENTER);
@@ -131,6 +136,17 @@ public class ChatScreen extends JFrame implements ActionListener {
 	}
 	
 	/**
+	 * 
+	 */
+	public void getQuestionList() {
+		questionList = DataProcessor.getQuestions();
+		processedQuestionList = new ArrayList< ArrayList<String> >();
+		for(String question : questionList) {
+			processedQuestionList.add(textProcessing(question));
+		}
+	}
+	
+	/**
 	 * @param word
 	 * @return
 	 */
@@ -156,19 +172,22 @@ public class ChatScreen extends JFrame implements ActionListener {
 	 * @return
 	 */
 	private ArrayList<String> textProcessing(String text) {
-		//TODO
-		String copiedText = new String(text);
+		String copiedText = "";
 		ArrayList<String> processedText = new ArrayList<String>();
-		
 		for(int i = 0; i < text.length(); i++) 
 			if (Character.isLetter(text.charAt(i)) 
 				|| Character.isDigit(text.charAt(i))
-				|| text.charAt(i) == ' ') 
+				|| text.charAt(i) == ' ') { 
 				copiedText += text.charAt(i);
+			}
 		
 		String[] words = copiedText.split(" ");
-		
-		
+		for(int i = 0; i < words.length; i++) {
+			words[i] = wordProcessing(words[i]);
+			if (!words[i].equals("")) {
+				processedText.add(words[i]);
+			}
+		}
 		return processedText;
 	}
 	
@@ -176,8 +195,29 @@ public class ChatScreen extends JFrame implements ActionListener {
 	 * @param question
 	 * @return
 	 */
-	private boolean reportNewQuestion(String question) {
-		return DataProcessor.insertReport(loginScr.getUsername(), "New question: " + question);
+	private void reportNewQuestion(String question) {
+		DataProcessor.insertReport(loginScr.getUsername(), "New question: " + question);
+	}
+	
+	/**
+	 * @param input
+	 * @param question
+	 * @return
+	 */
+	private double getPercentage(ArrayList<String> input, ArrayList<String> question) {
+		double forwardPercentage = 0;
+		double backwardPercentage = 0;
+		for(String word : input) {
+			if (question.contains(word)) {
+				forwardPercentage += 1;
+			}
+		}
+		for(String word : question) {
+			if (input.contains(word)) {
+				backwardPercentage += 1;
+			}
+		}
+		return Math.max(forwardPercentage / input.size(), backwardPercentage / question.size());
 	}
 	
 	/**
@@ -185,10 +225,74 @@ public class ChatScreen extends JFrame implements ActionListener {
 	 * @param questionList
 	 * @return
 	 */
-	private ArrayList<String> findMatch(String inputQuestion, ArrayList<String> questionList) {
-		//TODO 
+	private ArrayList<String> findMatch(String inputQuestion) {
+		ArrayList<String> processedQuestion = textProcessing(inputQuestion);
+		ArrayList<Integer> matchedID = new ArrayList<Integer>();
+		ArrayList<Integer> nearlyMatchedID = new ArrayList<Integer>();
 		ArrayList<String> matchedQuestions = new ArrayList<String>();
+		for(int i = 0; i < processedQuestionList.size(); i++) {
+			ArrayList<String> question = processedQuestionList.get(i);
+			double percentage = getPercentage(processedQuestion, question); 
+			if (percentage > 0.8) {
+				matchedID.add(i);
+			}
+			else if (percentage > 0.6) {
+				nearlyMatchedID.add(i);
+			}
+		}
+		if (matchedID.size() == 0) {
+			if (nearlyMatchedID.size() == 0) {
+				matchedQuestions.add("Sorry, I cannot answer your question right now "
+						+ "because it is not in the database!");
+				reportNewQuestion(inputQuestion);
+			}
+			else if (nearlyMatchedID.size() <= 5) {
+				for(Integer id : nearlyMatchedID) { 
+					matchedQuestions.add(questionList.get(id));
+				}
+			}
+			else {
+				matchedQuestions.add("Sorry, your question is too broad, could you make "
+						+ "it clearer?");
+			}
+		}
+		else if (matchedID.size() <= 5) {
+			for(Integer id : matchedID) { 
+				matchedQuestions.add(questionList.get(id));
+			}
+		}	
+		else {
+			matchedQuestions.add("Sorry, your question is too broad, could you make "
+					+ "it clearer?");
+		}
 		return matchedQuestions;
+	}
+	
+	/**
+	 * @param inputQuestion
+	 * @return
+	 */
+	private String getAnswer(String inputQuestion) {
+		String answer = "";
+		ArrayList<String> matchedQuestions = findMatch(inputQuestion);
+		if (matchedQuestions.size() == 1) {
+			if (matchedQuestions.get(0).length() >= 5 
+					&& matchedQuestions.get(0).substring(0, 5).equals("Sorry")) {
+				answer = matchedQuestions.get(0);
+			}
+			else {
+				answer = DataProcessor.getAnswer(matchedQuestions.get(0));
+			}
+		}
+		else {
+			answer = "Do you mean one of these:\n";
+			for(int i = 0; i < matchedQuestions.size(); i++) {
+				answer += "" + (i + 1) + ". " + matchedQuestions.get(i) + "\n";
+			}
+			answer += "If yes, rewrite yours as it appears above; otherwise, either "
+					+ "edit your question or report a new question using the button below.";
+		} 
+		return answer;
 	}
 
 	@Override
@@ -199,9 +303,12 @@ public class ChatScreen extends JFrame implements ActionListener {
 			if (messageBox.getText().length() < 1) {
                 // do nothing
             } else {
-                chatBox.append(String.format("%-10s : %s\n", loginScr.getUsername().toUpperCase(), messageBox.getText()));
+            	String inputQuestion = messageBox.getText().trim();
+                chatBox.append(String.format("<< %s >> %s\n", 
+                		loginScr.getUsername().trim().toUpperCase(), inputQuestion));
                 messageBox.setText("");
-                // TODO
+                chatBox.append(String.format("<< CSE-BOT >> %s\n\n", 
+                		getAnswer(inputQuestion).trim()));                
             } 
             messageBox.requestFocusInWindow();
 		}

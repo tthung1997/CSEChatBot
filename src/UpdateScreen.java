@@ -82,7 +82,8 @@ public class UpdateScreen extends JFrame implements ActionListener {
         //Question box
         questionBox = new JTextArea();
         questionBox.setEditable(true);
-        questionBox.setFont(new Font("Serif", Font.PLAIN, 15));
+        questionBox.setWrapStyleWord(true);
+        questionBox.setFont(new Font("Courier", Font.PLAIN, 14));
         questionBox.setLineWrap(true);
         questionBox.setMargin(new Insets(10, 10, 10, 10));
         
@@ -93,7 +94,8 @@ public class UpdateScreen extends JFrame implements ActionListener {
 	    //Answer box
 	    answerBox = new JTextArea();
 	    answerBox.setEditable(true);
-	    answerBox.setFont(new Font("Serif", Font.PLAIN, 15));
+	    answerBox.setWrapStyleWord(true);
+	    answerBox.setFont(new Font("Courier", Font.PLAIN, 14));
 	    answerBox.setLineWrap(true);
 	    answerBox.setMargin(new Insets(10, 10, 10, 10));
         
@@ -150,6 +152,7 @@ public class UpdateScreen extends JFrame implements ActionListener {
 			}
 			else {
 				DataProcessor.insertQA(question, answer);
+				chatScr.getQuestionList();
 				message.setText("Successfully updated.");
 				questionBox.setText("");
 				answerBox.setText("");

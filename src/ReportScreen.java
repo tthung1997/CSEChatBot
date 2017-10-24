@@ -77,7 +77,8 @@ public class ReportScreen extends JFrame implements ActionListener {
         //Report box
         reportBox = new JTextArea();
         reportBox.setEditable(true);
-        reportBox.setFont(new Font("Serif", Font.PLAIN, 15));
+        reportBox.setWrapStyleWord(true);
+        reportBox.setFont(new Font("Courier", Font.PLAIN, 14));
         reportBox.setLineWrap(true);
         reportBox.setMargin(new Insets(10, 10, 10, 10));
         reportPanel.add(new JScrollPane(reportBox), BorderLayout.CENTER);

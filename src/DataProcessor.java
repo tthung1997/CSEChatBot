@@ -5,15 +5,11 @@ import org.apache.log4j.Logger;
 import java.sql.*;
 
 /**
- * 
+ * This is a collection of utility methods that define a general API for
+ * interacting with the database supporting this application.
+ * @author Group 11 CSCE 361
+ * @date Fall 2017
  */
-
-/**
- * @author trieu
- *
- */
-
-
 public class DataProcessor {
 	
 	private static final String url = "jdbc:mysql://cse.unl.edu:3306/ziyunw";
@@ -21,6 +17,10 @@ public class DataProcessor {
 	private static final String password = "I_Uv4Z";
 	private static org.apache.log4j.Logger log = Logger.getLogger(DataProcessor.class);
 	
+	/**
+	 * This method creates the connection with the database
+	 * @return connection
+	 */
 	static public Connection getConnection() {
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -52,7 +52,8 @@ public class DataProcessor {
 	}
 	
 	/**
-	 * @return
+	 * This method returns a list of all questions from the database
+	 * @return list of questions
 	 */
 	public static ArrayList<String> getQuestions() {
 		Connection conn = DataProcessor.getConnection();
@@ -82,8 +83,9 @@ public class DataProcessor {
 	}
 	
 	/**
-	 * @param questionID
-	 * @return
+	 * This method retrieves the answer of a specific question
+	 * @param question
+	 * @return answer
 	 */
 	public static String getAnswer(String question) {
 		Connection conn = DataProcessor.getConnection();
@@ -114,9 +116,9 @@ public class DataProcessor {
 	}
 	
 	/**
+	 * This method inserts a new question along with its answer to the databse
 	 * @param question
 	 * @param answer
-	 * @return
 	 */
 	public static void insertQA(String question, String answer) {
 		Connection conn = DataProcessor.getConnection();
@@ -141,9 +143,9 @@ public class DataProcessor {
 	}
 	
 	/**
-	 * @param userID
+	 * This method inserts a report from a specific user to the database
+	 * @param username
 	 * @param report
-	 * @return
 	 */
 	public static void insertReport(String username, String report) {
 		Connection conn = DataProcessor.getConnection();
@@ -167,6 +169,11 @@ public class DataProcessor {
 		}
 	}
 	
+	/**
+	 * This method retrieves the userID giving the username
+	 * @param username
+	 * @return userID
+	 */
 	public static int getUserID(String username) {
 		Connection conn = DataProcessor.getConnection();
 		int userID = -1;
@@ -196,8 +203,9 @@ public class DataProcessor {
 	}
 	
 	/**
+	 * This method retrieves the password of a specific username
 	 * @param username
-	 * @return
+	 * @return password
 	 */
 	public static String getPassword(String username) {
 		Connection conn = DataProcessor.getConnection();
@@ -231,8 +239,9 @@ public class DataProcessor {
 	}
 	
 	/**
+	 * This method retrieves the role of user
 	 * @param username
-	 * @return
+	 * @return role
 	 */
 	public static String getRole(String username) {
 		Connection conn = DataProcessor.getConnection();

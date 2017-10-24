@@ -8,33 +8,34 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
- * 
- */
-
-/**
- * @author trieu
- *
+ * This class implements the Login Screen frame with all components.
+ * @author Group 11 CSCE 361
+ * @date Fall 2017
  */
 public class LoginScreen extends JFrame implements ActionListener {
 
-	private static final String LOGIN = "login";
-	private static final String REPORT = "report";
-	private String username;
-	private String role;
-	private ChatScreen chatScr;
-	private ReportScreen reportScr;
+	//Action commands
+	private static final String LOGIN 	= "login";
+	private static final String REPORT 	= "report";
 	
-	private JLabel usernameLabel;
-	private JLabel passwordLabel;
-	private JLabel messageLabel;
-	private JTextField usernameText;
-	private JPasswordField passwordText;
-	private JButton loginButton;
-	private JButton reportButton;
+	//Data variables
+	private String 				username;
+	private String 				role;
+	
+	//Instances of other screens
+	private ChatScreen 			chatScr;
+	private ReportScreen 		reportScr;
+	
+	//Java GUI components
+	private JLabel 				messageLabel;
+	private JTextField 			usernameText;
+	private JPasswordField 		passwordText;
+	private JButton 			loginButton;
+	private JButton 			reportButton;
 	
 	/**
+	 * This constructor creates Login Screen Frame
 	 * @throws IOException 
-	 * 
 	 */
 	public LoginScreen() throws IOException {
 		
@@ -68,7 +69,7 @@ public class LoginScreen extends JFrame implements ActionListener {
 		textPanel.setBorder(BorderFactory.createEmptyBorder(10, 90, 0, 90));
 		
 		//Username label
-		usernameLabel = new JLabel("USERNAME:", JLabel.TRAILING);
+		JLabel usernameLabel = new JLabel("USERNAME:", JLabel.TRAILING);
 		textPanel.add(usernameLabel);
 		
 		//Username Field
@@ -78,7 +79,7 @@ public class LoginScreen extends JFrame implements ActionListener {
 		textPanel.add(usernameText);
 		
 		//Password label
-		passwordLabel = new JLabel("PASSWORD:", JLabel.TRAILING);
+		JLabel passwordLabel = new JLabel("PASSWORD:", JLabel.TRAILING);
 		textPanel.add(passwordLabel);
 
 		//Password Field
@@ -119,16 +120,6 @@ public class LoginScreen extends JFrame implements ActionListener {
 		setLocationRelativeTo(null);
 		
 	}
-	
-	/**
-	 * @return
-	 */
-	private boolean isCorrectPassword(String inputUsername, String inputPassword) {
-		String realPassword = DataProcessor.getPassword(inputUsername);
-		if (realPassword.equals(inputPassword))
-			return true;
-		else return false;
-	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
@@ -147,7 +138,7 @@ public class LoginScreen extends JFrame implements ActionListener {
 				messageLabel.setText("Invalid password. Try again.");
 			}
 		}
-		else {
+		else { //Report
 			this.setVisible(false);
 			reportScr.appearFrom(this);
 		}
@@ -172,6 +163,19 @@ public class LoginScreen extends JFrame implements ActionListener {
 	 */
 	public String getUsername() {
 		return username;
+	}
+
+	/**
+	 * This method checks the correctness of the password
+	 * @param inputUsername
+	 * @param inputPassword
+	 * @return true if password if correct, false otherwise
+	 */
+	private boolean isCorrectPassword(String inputUsername, String inputPassword) {
+		String realPassword = DataProcessor.getPassword(inputUsername);
+		if (realPassword.equals(inputPassword))
+			return true;
+		else return false;
 	}
 	
 }

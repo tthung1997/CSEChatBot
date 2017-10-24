@@ -8,29 +8,29 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
- * 
- */
-
-/**
- * @author trieu
- *
+ * This class implements the Report Screen frame with all components.
+ * @author Group 11 CSCE 361
+ * @date Fall 2017
  */
 public class ReportScreen extends JFrame implements ActionListener {
 	
-	private static final String SEND = "send";
-	private static final String RETURN = "return";
+	//Action commands
+	private static final String SEND 	= "send";
+	private static final String RETURN 	= "return";
 	
-	private LoginScreen loginScr;
-	private JFrame previousScr;
+	//Instances of other screens
+	private LoginScreen 		loginScr;
+	private JFrame 				previousScr;
 	
-	private JTextArea reportBox;
-	private JButton returnButton;
-	private JButton reportButton;
-	private JLabel message;
+	//Java GUI components
+	private JTextArea 			reportBox;
+	private JButton 			returnButton;
+	private JButton 			reportButton;
+	private JLabel 				message;
 	
 	/**
+	 * This constructor creates Report Screen Frame
 	 * @throws IOException 
-	 * 
 	 */
 	public ReportScreen() throws IOException {
 		
@@ -125,7 +125,7 @@ public class ReportScreen extends JFrame implements ActionListener {
 				reportBox.setText("");
 			}
 		}
-		else {
+		else { //Return
 			message.setText(" ");
 			reportBox.setText("");
 			this.setVisible(false);
@@ -139,7 +139,12 @@ public class ReportScreen extends JFrame implements ActionListener {
 	public void setLoginScr(LoginScreen loginScr) {
 		this.loginScr = loginScr;
 	}
-
+	
+	/**
+	 * This method activates the Report Screen and 
+	 * stores the previous screen 
+	 * @param preScr
+	 */
 	public void appearFrom(JFrame preScr) {
 		this.setVisible(true);
 		this.previousScr = preScr;

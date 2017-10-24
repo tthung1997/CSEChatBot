@@ -9,37 +9,38 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
- * 
- */
-
-/**
- * @author trieu
- *
+ * This class implements the Chat Screen frame with all components.
+ * @author Group 11 CSCE 361
+ * @date Fall 2017
  */
 public class ChatScreen extends JFrame implements ActionListener {
 	
-	private static final String SEND = "send";
-	private static final String REPORT = "report";
-	private static final String UPDATE = "update";
+	//Action Commands
+	private static final String 			SEND 	= "send";
+	private static final String 			REPORT 	= "report";
+	private static final String 			UPDATE 	= "update";
 	
-	private ArrayList<String> badWords;
-	private ArrayList<String> questionList;
-	private ArrayList< ArrayList<String> > processedQuestionList;
+	//Data variables
+	private ArrayList<String> 				badWords;
+	private ArrayList<String> 				questionList;
+	private ArrayList< ArrayList<String> > 	processedQuestionList;
 	
-	private LoginScreen loginScr;
-	private ReportScreen reportScr;
-	private UpdateScreen updateScr;
+	//Instances of other screens
+	private LoginScreen 					loginScr;
+	private ReportScreen 					reportScr;
+	private UpdateScreen 					updateScr;
 	
-	private JTextField messageBox;
-	private JTextArea chatBox;
-	private JButton sendButton;
-	private JButton updateButton;
-	private JButton reportButton;
-	private JPanel buttonPanel;
+	//Java GUI components
+	private JTextField 						messageBox;
+	private JTextArea 						chatBox;
+	private JButton 						sendButton;
+	private JButton 						updateButton;
+	private JButton 						reportButton;
+	private JPanel 							buttonPanel;
 	
 	/**
+	 * This constructor creates Chat Screen Frame
 	 * @throws IOException 
-	 * 
 	 */
 	public ChatScreen() throws IOException {
 		
@@ -136,7 +137,7 @@ public class ChatScreen extends JFrame implements ActionListener {
 	}
 	
 	/**
-	 * 
+	 * This method retrieves the list of questions from the database
 	 */
 	public void getQuestionList() {
 		questionList = DataProcessor.getQuestions();
@@ -145,10 +146,71 @@ public class ChatScreen extends JFrame implements ActionListener {
 			processedQuestionList.add(textProcessing(question));
 		}
 	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		String cmd = e.getActionCommand();
+		if (SEND.equals(cmd)) {
+			if (messageBox.getText().length() < 1) {
+                // do nothing because user inputs nothing
+            } else {
+            	String inputQuestion = messageBox.getText().trim();
+                chatBox.append(String.format("<< %s >> %s\n", 
+                		loginScr.getUsername().trim().toUpperCase(), inputQuestion));
+                messageBox.setText("");
+                chatBox.append(String.format("<< CSE-BOT >> %s\n\n", 
+                		getAnswer(inputQuestion).trim()));                
+            } 
+            messageBox.requestFocusInWindow();
+		}
+		else if (UPDATE.equals(cmd)) {
+			messageBox.setText("");
+			this.setVisible(false);
+			updateScr.setVisible(true);
+		}
+		else { //Report
+			messageBox.setText("");
+			this.setVisible(false);
+			reportScr.appearFrom(this);
+		}
+	}
+
+	/**
+	 * This method activates the Chat Screen according to user's role
+	 * @param role
+	 */
+	public void appearFor(String role) {
+		if (role.equals("Student")) 
+			buttonPanel.remove(updateButton);
+		this.setVisible(true);
+	}
+
+	/**
+	 * @param loginScr the loginScr to set
+	 */
+	public void setLoginScr(LoginScreen loginScr) {
+		this.loginScr = loginScr;
+	}
+
+	/**
+	 * @param reportScr the reportScr to set
+	 */
+	public void setReportScr(ReportScreen reportScr) {
+		this.reportScr = reportScr;
+	}
+
+	/**
+	 * @param updateScr the updateScr to set
+	 */
+	public void setUpdateScr(UpdateScreen updateScr) {
+		this.updateScr = updateScr;
+	}
 	
 	/**
+	 * This method processes the input word by removing bad words and
+	 * verb suffix
 	 * @param word
-	 * @return
+	 * @return processedWord 
 	 */
 	private String wordProcessing(String word) {
 		String processedWord = new String(word.toLowerCase());
@@ -168,8 +230,10 @@ public class ChatScreen extends JFrame implements ActionListener {
 	}
 	
 	/**
+	 * This method processes the input sentence by breaking it into words
+	 * and processing each word separately.
 	 * @param text
-	 * @return
+	 * @return an ArrayList of important words
 	 */
 	private ArrayList<String> textProcessing(String text) {
 		String copiedText = "";
@@ -192,17 +256,20 @@ public class ChatScreen extends JFrame implements ActionListener {
 	}
 	
 	/**
+	 * This method uses DataProcessor's method insertReport to
+	 * inform system manager about new question.
 	 * @param question
-	 * @return
 	 */
 	private void reportNewQuestion(String question) {
 		DataProcessor.insertReport(loginScr.getUsername(), "New question: " + question);
 	}
 	
 	/**
+	 * This method calculates the matching percentage between the input and a question
+	 * from the questionList
 	 * @param input
 	 * @param question
-	 * @return
+	 * @return the matching percentage
 	 */
 	private double getPercentage(ArrayList<String> input, ArrayList<String> question) {
 		double forwardPercentage = 0;
@@ -221,9 +288,12 @@ public class ChatScreen extends JFrame implements ActionListener {
 	}
 	
 	/**
+	 * This method returns a list of questions that match user's input question
+	 * - A matched question is a question that has higher than 80% matching percentage
+	 * - If no matched question is found, it will return a list of nearly matched 
+	 * questions instead
 	 * @param inputQuestion
-	 * @param questionList
-	 * @return
+	 * @return an array of matched questions
 	 */
 	private ArrayList<String> findMatch(String inputQuestion) {
 		ArrayList<String> processedQuestion = textProcessing(inputQuestion);
@@ -269,8 +339,9 @@ public class ChatScreen extends JFrame implements ActionListener {
 	}
 	
 	/**
+	 * This method creates the answer for a specific inputQuestion
 	 * @param inputQuestion
-	 * @return
+	 * @return answer
 	 */
 	private String getAnswer(String inputQuestion) {
 		String answer = "";
@@ -293,62 +364,6 @@ public class ChatScreen extends JFrame implements ActionListener {
 					+ "edit your question or report a new question using the button below.";
 		} 
 		return answer;
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		String cmd = e.getActionCommand();
-		
-		if (SEND.equals(cmd)) {
-			if (messageBox.getText().length() < 1) {
-                // do nothing
-            } else {
-            	String inputQuestion = messageBox.getText().trim();
-                chatBox.append(String.format("<< %s >> %s\n", 
-                		loginScr.getUsername().trim().toUpperCase(), inputQuestion));
-                messageBox.setText("");
-                chatBox.append(String.format("<< CSE-BOT >> %s\n\n", 
-                		getAnswer(inputQuestion).trim()));                
-            } 
-            messageBox.requestFocusInWindow();
-		}
-		else if (UPDATE.equals(cmd)) {
-			messageBox.setText("");
-			this.setVisible(false);
-			updateScr.setVisible(true);
-		}
-		else {
-			messageBox.setText("");
-			this.setVisible(false);
-			reportScr.appearFrom(this);
-		}
-	}
-
-	public void appearFor(String role) {
-		if (role.equals("Student")) 
-			buttonPanel.remove(updateButton);
-		this.setVisible(true);
-	}
-
-	/**
-	 * @param loginScr the loginScr to set
-	 */
-	public void setLoginScr(LoginScreen loginScr) {
-		this.loginScr = loginScr;
-	}
-
-	/**
-	 * @param reportScr the reportScr to set
-	 */
-	public void setReportScr(ReportScreen reportScr) {
-		this.reportScr = reportScr;
-	}
-
-	/**
-	 * @param updateScr the updateScr to set
-	 */
-	public void setUpdateScr(UpdateScreen updateScr) {
-		this.updateScr = updateScr;
 	}
 	
 }

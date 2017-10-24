@@ -8,32 +8,32 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 
 /**
- * 
- */
-
-/**
- * @author trieu
- *
+ * This class implements the Update Screen frame with all components.
+ * @author Group 11 CSCE 361
+ * @date Fall 2017
  */
 public class UpdateScreen extends JFrame implements ActionListener {
 
-	private static final String CHAT = "chat";
-	private static final String REPORT = "report";
-	private static final String UPDATE = "update";
+	//Action commands
+	private static final String CHAT 	= "chat";
+	private static final String REPORT 	= "report";
+	private static final String UPDATE 	= "update";
 	
-	private ReportScreen reportScr;
-	private ChatScreen chatScr;
+	//Instances of other screens
+	private ReportScreen 		reportScr;
+	private ChatScreen 			chatScr;
 	
-	private JTextArea questionBox;
-	private JTextArea answerBox;
-	private JButton chatButton;
-	private JButton updateButton;
-	private JButton reportButton;
-	private JLabel message;
+	//Java GUI components
+	private JTextArea 			questionBox;
+	private JTextArea 			answerBox;
+	private JButton 			chatButton;
+	private JButton 			updateButton;
+	private JButton 			reportButton;
+	private JLabel 				message;
 	
 	/**
+	 * This constructor creates Update Screen Frame
 	 * @throws IOException 
-	 * 
 	 */
 	public UpdateScreen() throws IOException {
 		
@@ -165,7 +165,7 @@ public class UpdateScreen extends JFrame implements ActionListener {
 			this.setVisible(false);
 			chatScr.setVisible(true);
 		}
-		else {
+		else {//Report
 			message.setText(" ");
 			questionBox.setText("");
 			answerBox.setText("");

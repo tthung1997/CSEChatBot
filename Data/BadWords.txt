@@ -1,9 +1,3 @@
-are
-is
-am
-with
-to
-be
 this
 that
 these
@@ -11,11 +5,3 @@ those
 the
 a
 an
-I
-you
-we
-they
-he
-she
-it
-about

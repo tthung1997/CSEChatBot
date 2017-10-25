@@ -272,97 +272,110 @@ public class ChatScreen extends JFrame implements ActionListener {
 	 * @return the matching percentage
 	 */
 	private double getPercentage(ArrayList<String> input, ArrayList<String> question) {
-		double forwardPercentage = 0;
-		double backwardPercentage = 0;
+		double numberOfMatchedWords = 0;
 		for(String word : input) {
 			if (question.contains(word)) {
-				forwardPercentage += 1;
+				numberOfMatchedWords += 1;
 			}
 		}
-		for(String word : question) {
-			if (input.contains(word)) {
-				backwardPercentage += 1;
-			}
-		}
-		return Math.max(forwardPercentage / input.size(), backwardPercentage / question.size());
+		return numberOfMatchedWords / input.size();
 	}
 	
 	/**
-	 * This method returns a list of questions that match user's input question
-	 * - A matched question is a question that has higher than 80% matching percentage
-	 * - If no matched question is found, it will return a list of nearly matched 
-	 * questions instead
+	 * This method adds all matched questions into the ArrayList
+	 * @param matchedID
+	 * @param matchedQuestions
+	 */
+	private void addQuestions(ArrayList<Integer> matchedID, ArrayList<String> matchedQuestions) {
+		for(Integer id : matchedID) { 
+			matchedQuestions.add(questionList.get(id));
+		}
+	}
+	
+	/**
+	 * This method generates a replacement suggestion for input question.
+	 * @param matchedQuestions
+	 * @return suggestion
+	 */
+	private String getSuggestions(ArrayList<String> matchedQuestions) {
+		String suggestion = "Do you mean one of these:\n";
+		for(int i = 0; i < matchedQuestions.size(); i++) {
+			suggestion += "" + (i + 1) + ". " + matchedQuestions.get(i) + "\n";
+		}
+		suggestion += "If yes, rewrite yours as it appears above; otherwise, either "
+				+ "edit your question or report a new question using the button below.";
+		return suggestion;
+	}
+	
+	/**
+	 * This method generates answer for a specific question.
 	 * @param inputQuestion
 	 * @return an array of matched questions
 	 */
-	private ArrayList<String> findMatch(String inputQuestion) {
+	private String getAnswer(String inputQuestion) {
+		final String notFound = "Sorry, I cannot answer your question right "
+				+ "now because it is not in the database. I will try to update"
+				+ " it as soon as possible.";
+		final String tooBroad = "Your question is too broad, could you make it "
+				+ "clearer?";
 		ArrayList<String> processedQuestion = textProcessing(inputQuestion);
 		ArrayList<Integer> matchedID = new ArrayList<Integer>();
 		ArrayList<Integer> nearlyMatchedID = new ArrayList<Integer>();
+		ArrayList<Integer> backwardMatchedID = new ArrayList<Integer>();
 		ArrayList<String> matchedQuestions = new ArrayList<String>();
+		String answer = "";
+		
+		//find matched questions
 		for(int i = 0; i < processedQuestionList.size(); i++) {
 			ArrayList<String> question = processedQuestionList.get(i);
-			double percentage = getPercentage(processedQuestion, question); 
-			if (percentage > 0.8) {
+			double forwardPercentage = getPercentage(processedQuestion, question);
+			double backwardPercentage = getPercentage(question, processedQuestion);
+			if (forwardPercentage > 0.8) {
 				matchedID.add(i);
 			}
-			else if (percentage > 0.6) {
+			else if (forwardPercentage > 0.6) {
 				nearlyMatchedID.add(i);
 			}
-		}
-		if (matchedID.size() == 0) {
-			if (nearlyMatchedID.size() == 0) {
-				matchedQuestions.add("Sorry, I cannot answer your question right now "
-						+ "because it is not in the database!");
-				reportNewQuestion(inputQuestion);
-			}
-			else if (nearlyMatchedID.size() <= 5) {
-				for(Integer id : nearlyMatchedID) { 
-					matchedQuestions.add(questionList.get(id));
-				}
-			}
-			else {
-				matchedQuestions.add("Sorry, your question is too broad, could you make "
-						+ "it clearer?");
+			else if (backwardPercentage > 0.8) {
+				backwardMatchedID.add(i);
 			}
 		}
-		else if (matchedID.size() <= 5) {
-			for(Integer id : matchedID) { 
-				matchedQuestions.add(questionList.get(id));
-			}
-		}	
-		else {
-			matchedQuestions.add("Sorry, your question is too broad, could you make "
-					+ "it clearer?");
-		}
-		return matchedQuestions;
-	}
-	
-	/**
-	 * This method creates the answer for a specific inputQuestion
-	 * @param inputQuestion
-	 * @return answer
-	 */
-	private String getAnswer(String inputQuestion) {
-		String answer = "";
-		ArrayList<String> matchedQuestions = findMatch(inputQuestion);
-		if (matchedQuestions.size() == 1) {
-			if (matchedQuestions.get(0).length() >= 5 
-					&& matchedQuestions.get(0).substring(0, 5).equals("Sorry")) {
-				answer = matchedQuestions.get(0);
-			}
-			else {
+		
+		//Get answer
+		if (matchedID.size() > 0) {
+			addQuestions(matchedID, matchedQuestions);
+			if (matchedQuestions.size() == 1) {
 				answer = DataProcessor.getAnswer(matchedQuestions.get(0));
 			}
+			else if (matchedQuestions.size() <= 5) {
+				answer = getSuggestions(matchedQuestions);
+			}
+			else {
+				answer = tooBroad;
+			}
+		}
+		else if (nearlyMatchedID.size() > 0) {
+			addQuestions(nearlyMatchedID, matchedQuestions);
+			if (matchedQuestions.size() <= 5) {
+				answer = getSuggestions(matchedQuestions);
+			}
+			else {
+				answer = tooBroad;
+			}
+		}
+		else if (backwardMatchedID.size() > 0) {
+			addQuestions(backwardMatchedID, matchedQuestions);
+			if (matchedQuestions.size() <= 5) {
+				answer = getSuggestions(matchedQuestions);
+			}
+			else {
+				answer = tooBroad;
+			}
 		}
 		else {
-			answer = "Do you mean one of these:\n";
-			for(int i = 0; i < matchedQuestions.size(); i++) {
-				answer += "" + (i + 1) + ". " + matchedQuestions.get(i) + "\n";
-			}
-			answer += "If yes, rewrite yours as it appears above; otherwise, either "
-					+ "edit your question or report a new question using the button below.";
-		} 
+			answer = notFound;
+			reportNewQuestion(inputQuestion);
+		}
 		return answer;
 	}
 	

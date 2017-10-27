@@ -20,8 +20,11 @@ public class ChatScreen extends JFrame implements ActionListener {
 	private static final String 			REPORT 	= "report";
 	private static final String 			UPDATE 	= "update";
 	
+	//List of bad words
+	private static final ArrayList<String>	BADWORDS = new ArrayList<String>(
+			Arrays.asList("this", "that", "these", "those", "the", "a", "an"));
+	
 	//Data variables
-	private ArrayList<String> 				badWords;
 	private ArrayList<String> 				questionList;
 	private ArrayList< ArrayList<String> > 	processedQuestionList;
 	
@@ -44,15 +47,6 @@ public class ChatScreen extends JFrame implements ActionListener {
 	 */
 	public ChatScreen() throws IOException {
 		
-		//Read bad words
-		badWords = new ArrayList<String>();
-		Scanner scnr = new Scanner(new File("Data/BadWords.txt"));
-		while (scnr.hasNextLine()) {
-			String line = scnr.nextLine().toLowerCase().trim();
-			badWords.add(line);
-		}
-		scnr.close();
-		
 		//Process question list
 		this.getQuestionList();
 		
@@ -69,7 +63,7 @@ public class ChatScreen extends JFrame implements ActionListener {
 		panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
 		//CSE image
-		BufferedImage csePicture = ImageIO.read(new File("Images/CSE_logo.png"));
+		BufferedImage csePicture = ImageIO.read(getClass().getResource("CSE_logo.png"));
 		JLabel picLabel = new JLabel(new ImageIcon(csePicture));
 		picLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		panel.add(picLabel, BorderLayout.WEST);
@@ -214,7 +208,7 @@ public class ChatScreen extends JFrame implements ActionListener {
 	 */
 	private String wordProcessing(String word) {
 		String processedWord = new String(word.toLowerCase());
-		if (badWords.contains(processedWord)) {
+		if (BADWORDS.contains(processedWord)) {
 			processedWord = "";
 		}
 		else {
@@ -330,7 +324,7 @@ public class ChatScreen extends JFrame implements ActionListener {
 			ArrayList<String> question = processedQuestionList.get(i);
 			double forwardPercentage = getPercentage(processedQuestion, question);
 			double backwardPercentage = getPercentage(question, processedQuestion);
-			if (forwardPercentage > 0.8) {
+			if (forwardPercentage > 0.9) {
 				matchedID.add(i);
 			}
 			else if (forwardPercentage > 0.6) {

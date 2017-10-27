@@ -50,7 +50,7 @@ public class UpdateScreen extends JFrame implements ActionListener {
 		panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
 		//CSE image
-		BufferedImage csePicture = ImageIO.read(new File("Images/CSE_logo.png"));
+		BufferedImage csePicture = ImageIO.read(getClass().getResource("CSE_logo.png"));
 		JLabel picLabel = new JLabel(new ImageIcon(csePicture));
 		picLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		panel.add(picLabel, BorderLayout.WEST);

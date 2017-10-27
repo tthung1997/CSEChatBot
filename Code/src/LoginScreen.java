@@ -19,7 +19,7 @@ public class LoginScreen extends JFrame implements ActionListener {
 	private static final String REPORT 	= "report";
 	
 	//Data variables
-	private String 				username;
+	private String 				username = "anonymous";
 	private String 				role;
 	
 	//Instances of other screens
@@ -52,7 +52,7 @@ public class LoginScreen extends JFrame implements ActionListener {
 		panel.setBorder(BorderFactory.createEmptyBorder(50, 80, 50, 80));
 
 		//CSE image
-		BufferedImage csePicture = ImageIO.read(new File("Images/cse.png"));
+		BufferedImage csePicture = ImageIO.read(getClass().getResource("cse.png"));
 		JLabel picLabel = new JLabel(new ImageIcon(csePicture));
 		picLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		panel.add(picLabel);

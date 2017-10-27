@@ -24,8 +24,12 @@ public class ChatScreen extends JFrame implements ActionListener {
 	private static final ArrayList<String>	BADWORDS = new ArrayList<String>(
 			Arrays.asList("this", "that", "these", "those", "the", "a", "an"));
 	
+	//Constant of double comparison
+	private static final double 			EPSILON = 1e-9; 
+	
 	//Data variables
 	private ArrayList<String> 				questionList;
+	private ArrayList<String> 				matchedQuestions;
 	private ArrayList< ArrayList<String> > 	processedQuestionList;
 	
 	//Instances of other screens
@@ -292,12 +296,13 @@ public class ChatScreen extends JFrame implements ActionListener {
 	 * @return suggestion
 	 */
 	private String getSuggestions(ArrayList<String> matchedQuestions) {
-		String suggestion = "Do you mean one of these:\n";
+		String suggestion = "Do you mean:\n";
 		for(int i = 0; i < matchedQuestions.size(); i++) {
 			suggestion += "" + (i + 1) + ". " + matchedQuestions.get(i) + "\n";
 		}
 		suggestion += "If yes, rewrite yours as it appears above; otherwise, either "
-				+ "edit your question or report a new question using the button below.";
+				+ "edit your question or report a new question using the REPORT "
+				+ "button below.";
 		return suggestion;
 	}
 	
@@ -307,16 +312,16 @@ public class ChatScreen extends JFrame implements ActionListener {
 	 * @return an array of matched questions
 	 */
 	private String getAnswer(String inputQuestion) {
-		final String notFound = "Sorry, I cannot answer your question right "
+		final String NOTFOUND = "Sorry, I cannot answer your question right "
 				+ "now because it is not in the database. I will try to update"
 				+ " it as soon as possible.";
-		final String tooBroad = "Your question is too broad, could you make it "
+		final String TOOBROAD = "Your question is too broad, could you make it "
 				+ "clearer?";
 		ArrayList<String> processedQuestion = textProcessing(inputQuestion);
 		ArrayList<Integer> matchedID = new ArrayList<Integer>();
 		ArrayList<Integer> nearlyMatchedID = new ArrayList<Integer>();
 		ArrayList<Integer> backwardMatchedID = new ArrayList<Integer>();
-		ArrayList<String> matchedQuestions = new ArrayList<String>();
+		matchedQuestions = new ArrayList<String>();
 		String answer = "";
 		
 		//find matched questions
@@ -324,7 +329,13 @@ public class ChatScreen extends JFrame implements ActionListener {
 			ArrayList<String> question = processedQuestionList.get(i);
 			double forwardPercentage = getPercentage(processedQuestion, question);
 			double backwardPercentage = getPercentage(question, processedQuestion);
-			if (forwardPercentage > 0.9) {
+			if (Math.abs(Math.min(forwardPercentage, backwardPercentage) - 1) < EPSILON) {
+				//If the input matches a question 100%
+				matchedID.clear();
+				matchedID.add(i);
+				break;
+			}
+			if (forwardPercentage > 0.8) {
 				matchedID.add(i);
 			}
 			else if (forwardPercentage > 0.6) {
@@ -345,7 +356,7 @@ public class ChatScreen extends JFrame implements ActionListener {
 				answer = getSuggestions(matchedQuestions);
 			}
 			else {
-				answer = tooBroad;
+				answer = TOOBROAD;
 			}
 		}
 		else if (nearlyMatchedID.size() > 0) {
@@ -354,7 +365,7 @@ public class ChatScreen extends JFrame implements ActionListener {
 				answer = getSuggestions(matchedQuestions);
 			}
 			else {
-				answer = tooBroad;
+				answer = TOOBROAD;
 			}
 		}
 		else if (backwardMatchedID.size() > 0) {
@@ -363,11 +374,11 @@ public class ChatScreen extends JFrame implements ActionListener {
 				answer = getSuggestions(matchedQuestions);
 			}
 			else {
-				answer = tooBroad;
+				answer = TOOBROAD;
 			}
 		}
 		else {
-			answer = notFound;
+			answer = NOTFOUND;
 			reportNewQuestion(inputQuestion);
 		}
 		return answer;

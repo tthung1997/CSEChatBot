@@ -115,9 +115,10 @@ public class ReportScreen extends JFrame implements ActionListener {
 		
 		if (SEND.equals(cmd)) {
 			message.setText(" ");
-			String report = reportBox.getText();
+			String report = reportBox.getText().trim();
 			if (report.length() < 1) {
 				message.setText("Report cannot be empty.");
+				reportBox.setText("");
 			}
 			else {
 				DataProcessor.insertReport(loginScr.getUsername(), report);

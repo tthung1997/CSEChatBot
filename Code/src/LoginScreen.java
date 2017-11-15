@@ -126,9 +126,17 @@ public class LoginScreen extends JFrame implements ActionListener {
 		String cmd = e.getActionCommand();
 
 		if (LOGIN.equals(cmd)) {
-			String inputUsername = usernameText.getText();
+			messageLabel.setText(" ");
+			String inputUsername = usernameText.getText().trim();
 			String inputPassword = new String(passwordText.getPassword());
-			if (isCorrectPassword(inputUsername, inputPassword)) {
+			if (inputUsername.length() < 1) {
+				messageLabel.setText("Username cannot be empty.");
+				usernameText.setText("");
+			}
+			else if (inputPassword.length() < 1) {
+				messageLabel.setText("Password cannot be empty.");
+			}
+			else if (isCorrectPassword(inputUsername, inputPassword)) {
 				this.username = inputUsername;
 				this.role = DataProcessor.getRole(this.username);
 				this.setVisible(false);

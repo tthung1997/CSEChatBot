@@ -142,13 +142,15 @@ public class UpdateScreen extends JFrame implements ActionListener {
 		
 		if (UPDATE.equals(cmd)) {
 			message.setText(" ");
-			String question = questionBox.getText();
-			String answer = answerBox.getText();
+			String question = questionBox.getText().trim();
+			String answer = answerBox.getText().trim();
 			if (question.length() < 1) {
 				message.setText("Question cannot be empty.");
+				questionBox.setText("");
 			}
 			else if (answer.length() < 1) {
 				message.setText("Answer cannot be empty.");
+				answerBox.setText("");
 			}
 			else {
 				DataProcessor.insertQA(question, answer);

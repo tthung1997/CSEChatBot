@@ -149,10 +149,11 @@ public class ChatScreen extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
 		if (SEND.equals(cmd)) {
-			if (messageBox.getText().length() < 1) {
+        	String inputQuestion = messageBox.getText().trim();
+			if (inputQuestion.length() < 1) {
                 // do nothing because user inputs nothing
+				messageBox.setText("");
             } else {
-            	String inputQuestion = messageBox.getText().trim();
                 chatBox.append(String.format("<< %s >> %s\n", 
                 		loginScr.getUsername().trim().toUpperCase(), inputQuestion));
                 messageBox.setText("");

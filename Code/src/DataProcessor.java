@@ -83,6 +83,38 @@ public class DataProcessor {
 	}
 	
 	/**
+	 * This method returns a list of all reports from the database
+	 * @return list of reports
+	 */
+	public static ArrayList<Report> getReports() {
+		Connection conn = DataProcessor.getConnection();
+		ArrayList<Report> reports = new ArrayList<Report>();
+		PreparedStatement ps;
+    	ResultSet rs;
+    	try {
+    		String query = "SELECT * FROM Reports";
+    		ps = conn.prepareStatement(query);
+    		rs = ps.executeQuery();
+    		while (rs.next()) {
+    			reports.add(new Report(rs.getInt("ReportID"), rs.getInt("UserID"), 
+    					rs.getString("Report")));
+    		}
+    		ps.close();
+    		rs.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+		return reports;
+	}
+	
+	/**
 	 * This method retrieves the answer of a specific question
 	 * @param question
 	 * @return answer
@@ -203,6 +235,39 @@ public class DataProcessor {
 	}
 	
 	/**
+	 * This method retrieves the username giving the userID
+	 * @param userID
+	 * @return username
+	 */
+	public static String getUsername(int userID) {
+		Connection conn = DataProcessor.getConnection();
+		String username = "";
+		PreparedStatement ps;
+    	ResultSet rs;
+    	try {
+    		String query = "SELECT Username FROM Accounts WHERE UserID = ?";
+    		ps = conn.prepareStatement(query);
+    		ps.setInt(1, userID);
+    		rs = ps.executeQuery();
+    		if (rs.next()) {
+    			username = rs.getString("Username");
+    		}
+    		ps.close();
+    		rs.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+		return username;
+	}
+	
+	/**
 	 * This method retrieves the password of a specific username
 	 * @param username
 	 * @return password
@@ -269,6 +334,92 @@ public class DataProcessor {
 			log.error("SQLException: ", e);
 		}
 		return role;
+	}
+	
+	/**
+	 * This method removes a report from the database.
+	 * @param id 
+	 */
+	public static void removeReport(int id) {
+		Connection conn = DataProcessor.getConnection();
+		PreparedStatement ps;
+		
+		try {
+			String delete = "DELETE FROM Reports WHERE ReportID = ?";
+			ps = conn.prepareStatement(delete);
+			ps.setInt(1,  id);
+			ps.executeUpdate();
+			ps.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+	}
+	
+	/**
+	 * This method removes a question along with its answer from 
+	 * the database.
+	 * @param question
+	 */
+	public static void removeQuestion(String question) {
+		Connection conn = DataProcessor.getConnection();
+		PreparedStatement ps;
+		
+		try {
+			String delete = "DELETE FROM QA WHERE Question = ?";
+			ps = conn.prepareStatement(delete);
+			ps.setString(1,  question);
+			ps.executeUpdate();
+			ps.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+	}
+	
+	/**
+	 * This method updates a question in the database.
+	 * @param id
+	 * @param question
+	 * @param answer
+	 */
+	public static void updateQuestion(int id, String question, String answer) {
+		Connection conn = DataProcessor.getConnection();
+		PreparedStatement ps;
+		
+		try {
+			String update = "UPDATE QA SET Question = ?, Answer = ? WHERE QuestionID = ?";
+			ps = conn.prepareStatement(update);
+			ps.setString(1, question);
+			ps.setString(2, answer);
+			ps.setInt(3, id);
+			ps.executeUpdate();
+			ps.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
 	}
 	
 }

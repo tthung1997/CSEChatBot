@@ -1,0 +1,14 @@
+/**
+ * 
+ */
+
+/**
+ * @author TRIEU HUNG
+ *
+ */
+public class Report {
+
+	private String report;
+	private String username;
+	
+}

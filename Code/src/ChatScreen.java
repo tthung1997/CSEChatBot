@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 /**
  * This class implements the Chat Screen frame with all components.
@@ -118,7 +119,7 @@ public class ChatScreen extends JFrame implements ActionListener {
         
         //button panel
         buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout());
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
         buttonPanel.add(sendButton);
         buttonPanel.add(updateButton);
         buttonPanel.add(reportButton);
@@ -261,6 +262,13 @@ public class ChatScreen extends JFrame implements ActionListener {
 	 */
 	private void reportNewQuestion(String question) {
 		DataProcessor.insertReport(loginScr.getUsername(), "New question: " + question);
+		Report report = DataProcessor.getNewestReport();
+		reportScr.getReports().add(report);
+		DefaultTableModel model = (DefaultTableModel)reportScr.getTable().getModel();
+		Object[] row = new Object[2];
+		row[0] = report.getUsername();
+		row[1] = report.getReport();
+		model.addRow(row);
 	}
 	
 	/**

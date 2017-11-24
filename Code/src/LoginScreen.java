@@ -97,24 +97,27 @@ public class LoginScreen extends JFrame implements ActionListener {
 		
 		//Buttons panel
 		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
+		buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0));
+		buttonPanel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+		panel.add(buttonPanel);
 		
 		//Login Button
 		loginButton = new JButton("LOGIN");
 		loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		loginButton.setPreferredSize(new Dimension(90, 40));
 		loginButton.addActionListener(this);
 		loginButton.setActionCommand(LOGIN);
 		buttonPanel.add(loginButton);
-		buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
+//		buttonPanel.add(Box.createRigidArea(new Dimension(20, 0)));
 		
 		//Report Button
 		reportButton = new JButton("REPORT");
 		reportButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		reportButton.setPreferredSize(new Dimension(90, 40));
 		reportButton.addActionListener(this);
 		reportButton.setActionCommand(REPORT);
 		buttonPanel.add(reportButton);
-		
-		panel.add(buttonPanel);
+	
 		contentPane.add(panel);
 		pack();
 		setLocationRelativeTo(null);

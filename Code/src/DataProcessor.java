@@ -115,6 +115,38 @@ public class DataProcessor {
 	}
 	
 	/**
+	 * This method returns a report from the database
+	 * @return a report
+	 */
+	public static Report getNewestReport() {
+		Connection conn = DataProcessor.getConnection();
+		Report report = null;
+		PreparedStatement ps;
+    	ResultSet rs;
+    	try {
+    		String query = "SELECT * FROM Reports ORDER BY ReportID DESC LIMIT 1";
+    		ps = conn.prepareStatement(query);
+    		rs = ps.executeQuery();
+    		while (rs.next()) {
+    			report = new Report(rs.getInt("ReportID"), rs.getInt("UserID"), 
+    					rs.getString("Report"));
+    		}
+    		ps.close();
+    		rs.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+		return report;
+	}
+	
+	/**
 	 * This method retrieves the answer of a specific question
 	 * @param question
 	 * @return answer
@@ -183,7 +215,7 @@ public class DataProcessor {
 		Connection conn = DataProcessor.getConnection();
 		PreparedStatement ps;
     	try {
-    		String insertQA = "INSERT INTO Reports VALUES (?, ?)";
+    		String insertQA = "INSERT INTO Reports VALUES (NULL, ?, ?)";
     		ps = conn.prepareStatement(insertQA);
     		ps.setInt(1, getUserID(username));
     		ps.setString(2, report);
@@ -393,20 +425,20 @@ public class DataProcessor {
 	
 	/**
 	 * This method updates a question in the database.
-	 * @param id
+	 * @param oldQuestion
 	 * @param question
 	 * @param answer
 	 */
-	public static void updateQuestion(int id, String question, String answer) {
+	public static void updateQuestion(String oldQuestion, String question, String answer) {
 		Connection conn = DataProcessor.getConnection();
 		PreparedStatement ps;
 		
 		try {
-			String update = "UPDATE QA SET Question = ?, Answer = ? WHERE QuestionID = ?";
+			String update = "UPDATE QA SET Question = ?, Answer = ? WHERE Question = ?";
 			ps = conn.prepareStatement(update);
 			ps.setString(1, question);
 			ps.setString(2, answer);
-			ps.setInt(3, id);
+			ps.setString(3, oldQuestion);
 			ps.executeUpdate();
 			ps.close();
 		} catch (SQLException e) {

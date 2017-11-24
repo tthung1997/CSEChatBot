@@ -1,0 +1,392 @@
+import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+/**
+ * This class implements the Chat Screen frame with all components.
+ * @author Group 11 CSCE 361
+ * @date Fall 2017
+ */
+public class ChatScreen extends JFrame implements ActionListener {
+	
+	//Action Commands
+	private static final String 			SEND 	= "send";
+	private static final String 			REPORT 	= "report";
+	private static final String 			UPDATE 	= "update";
+	
+	//List of bad words
+	private static final ArrayList<String>	BADWORDS = new ArrayList<String>(
+			Arrays.asList("this", "that", "these", "those", "the", "a", "an"));
+	
+	//Constant of double comparison
+	private static final double 			EPSILON = 1e-9; 
+	
+	//Data variables
+	private ArrayList<String> 				questionList;
+	private ArrayList<String> 				matchedQuestions;
+	private ArrayList< ArrayList<String> > 	processedQuestionList;
+	
+	//Instances of other screens
+	private LoginScreen 					loginScr;
+	private ReportScreen 					reportScr;
+	private UpdateScreen 					updateScr;
+	
+	//Java GUI components
+	private JTextField 						messageBox;
+	private JTextArea 						chatBox;
+	private JButton 						sendButton;
+	private JButton 						updateButton;
+	private JButton 						reportButton;
+	private JPanel 							buttonPanel;
+	
+	/**
+	 * This constructor creates Chat Screen Frame
+	 * @throws IOException 
+	 */
+	public ChatScreen() throws IOException {
+		
+		//Process question list
+		this.getQuestionList();
+		
+		//Set frame
+		setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+		setTitle("CSE CHATBOT - CHAT");
+		setResizable(false);
+		Container contentPane = getContentPane();
+		
+		//Create panel
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout());
+		panel.setPreferredSize (new Dimension(600, 400));
+		panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+		//CSE image
+		BufferedImage csePicture = ImageIO.read(getClass().getResource("CSE_logo.png"));
+		JLabel picLabel = new JLabel(new ImageIcon(csePicture));
+		picLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		panel.add(picLabel, BorderLayout.WEST);
+		
+		//Chat panel
+		JPanel chatPanel = new JPanel();
+		chatPanel.setLayout(new BorderLayout(0, 5));
+		chatPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+		
+		//Message Box
+		messageBox = new JTextField(30);
+		messageBox.requestFocusInWindow();
+		messageBox.setActionCommand(SEND);
+		messageBox.addActionListener(this);
+		messageBox.setMargin(new Insets(10, 10, 10, 0));
+		
+		//Send button
+		sendButton = new JButton("SEND");
+		sendButton.setActionCommand(SEND);
+        sendButton.addActionListener(this);
+        sendButton.setPreferredSize(new Dimension(90, 40));
+        
+        //Update button
+        updateButton = new JButton("UPDATE");
+        updateButton.setActionCommand(UPDATE);
+        updateButton.addActionListener(this);
+        updateButton.setPreferredSize(new Dimension(90, 40));
+        
+        //Report button
+		reportButton = new JButton("REPORT");
+		reportButton.setActionCommand(REPORT);
+		reportButton.addActionListener(this);
+		reportButton.setPreferredSize(new Dimension(90, 40));
+        
+        //Chat box
+        chatBox = new JTextArea();
+        chatBox.setEditable(false);
+        chatBox.setWrapStyleWord(true);
+        chatBox.setFont(new Font("Courier", Font.PLAIN, 12));
+        chatBox.setLineWrap(true);
+        chatBox.setMargin(new Insets(10, 10, 10, 10));
+        chatPanel.add(new JScrollPane(chatBox), BorderLayout.CENTER);
+        
+        //input panel
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.add(messageBox);
+        
+        //button panel
+        buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        buttonPanel.add(sendButton);
+        buttonPanel.add(updateButton);
+        buttonPanel.add(reportButton);
+        buttonPanel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+        inputPanel.add(buttonPanel);
+        chatPanel.add(inputPanel, BorderLayout.SOUTH);
+        
+        panel.add(chatPanel, BorderLayout.CENTER);
+        
+		contentPane.add(panel);
+		pack();
+		setLocationRelativeTo(null);
+		
+	}
+	
+	/**
+	 * This method retrieves the list of questions from the database
+	 */
+	public void getQuestionList() {
+		questionList = DataProcessor.getQuestions();
+		processedQuestionList = new ArrayList< ArrayList<String> >();
+		for(String question : questionList) {
+			processedQuestionList.add(textProcessing(question));
+		}
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		String cmd = e.getActionCommand();
+		if (SEND.equals(cmd)) {
+        	String inputQuestion = messageBox.getText().trim();
+			if (inputQuestion.length() < 1) {
+                // do nothing because user inputs nothing
+				messageBox.setText("");
+            } else {
+                chatBox.append(String.format("<< %s >> %s\n", 
+                		loginScr.getUsername().trim().toUpperCase(), inputQuestion));
+                messageBox.setText("");
+                chatBox.append(String.format("<< CSE-BOT >> %s\n\n", 
+                		getAnswer(inputQuestion).trim()));                
+            } 
+            messageBox.requestFocusInWindow();
+		}
+		else if (UPDATE.equals(cmd)) {
+			messageBox.setText("");
+			this.setVisible(false);
+			updateScr.setVisible(true);
+		}
+		else { //Report
+			messageBox.setText("");
+			this.setVisible(false);
+			reportScr.appearFrom(this);
+		}
+	}
+
+	/**
+	 * This method activates the Chat Screen according to user's role
+	 * @param role
+	 */
+	public void appearFor(String role) {
+		if (role.equals("Student")) 
+			buttonPanel.remove(updateButton);
+		this.setVisible(true);
+	}
+
+	/**
+	 * @param loginScr the loginScr to set
+	 */
+	public void setLoginScr(LoginScreen loginScr) {
+		this.loginScr = loginScr;
+	}
+
+	/**
+	 * @param reportScr the reportScr to set
+	 */
+	public void setReportScr(ReportScreen reportScr) {
+		this.reportScr = reportScr;
+	}
+
+	/**
+	 * @param updateScr the updateScr to set
+	 */
+	public void setUpdateScr(UpdateScreen updateScr) {
+		this.updateScr = updateScr;
+	}
+	
+	/**
+	 * This method processes the input word by removing bad words and
+	 * verb suffix
+	 * @param word
+	 * @return processedWord 
+	 */
+	private String wordProcessing(String word) {
+		String processedWord = new String(word.toLowerCase());
+		if (BADWORDS.contains(processedWord)) {
+			processedWord = "";
+		}
+		else {
+			int len = processedWord.length();
+			if (len > 3 && processedWord.substring(len - 3, len).equals("ing")) {
+				processedWord = processedWord.substring(0, len - 3);
+			}
+			else if (len > 2 && word.substring(len - 2, len).equals("ed")) {
+				processedWord = processedWord.substring(0, len - 2);
+			}
+		}
+		return processedWord;
+	}
+	
+	/**
+	 * This method processes the input sentence by breaking it into words
+	 * and processing each word separately.
+	 * @param text
+	 * @return an ArrayList of important words
+	 */
+	private ArrayList<String> textProcessing(String text) {
+		String copiedText = "";
+		ArrayList<String> processedText = new ArrayList<String>();
+		for(int i = 0; i < text.length(); i++) 
+			if (Character.isLetter(text.charAt(i)) 
+				|| Character.isDigit(text.charAt(i))
+				|| text.charAt(i) == ' ') { 
+				copiedText += text.charAt(i);
+			}
+		
+		String[] words = copiedText.split(" ");
+		for(int i = 0; i < words.length; i++) {
+			words[i] = wordProcessing(words[i]);
+			if (!words[i].equals("")) {
+				processedText.add(words[i]);
+			}
+		}
+		return processedText;
+	}
+	
+	/**
+	 * This method uses DataProcessor's method insertReport to
+	 * inform system manager about new question.
+	 * @param question
+	 */
+	private void reportNewQuestion(String question) {
+		DataProcessor.insertReport(loginScr.getUsername(), "New question: " + question);
+		Report report = DataProcessor.getNewestReport();
+		DefaultTableModel model = (DefaultTableModel)reportScr.getTable().getModel();
+		
+	}
+	
+	/**
+	 * This method calculates the matching percentage between the input and a question
+	 * from the questionList
+	 * @param input
+	 * @param question
+	 * @return the matching percentage
+	 */
+	private double getPercentage(ArrayList<String> input, ArrayList<String> question) {
+		double numberOfMatchedWords = 0;
+		for(String word : input) {
+			if (question.contains(word)) {
+				numberOfMatchedWords += 1;
+			}
+		}
+		return numberOfMatchedWords / input.size();
+	}
+	
+	/**
+	 * This method adds all matched questions into the ArrayList
+	 * @param matchedID
+	 * @param matchedQuestions
+	 */
+	private void addQuestions(ArrayList<Integer> matchedID, ArrayList<String> matchedQuestions) {
+		for(Integer id : matchedID) { 
+			matchedQuestions.add(questionList.get(id));
+		}
+	}
+	
+	/**
+	 * This method generates a replacement suggestion for input question.
+	 * @param matchedQuestions
+	 * @return suggestion
+	 */
+	private String getSuggestions(ArrayList<String> matchedQuestions) {
+		String suggestion = "Do you mean:\n";
+		for(int i = 0; i < matchedQuestions.size(); i++) {
+			suggestion += "" + (i + 1) + ". " + matchedQuestions.get(i) + "\n";
+		}
+		suggestion += "If yes, rewrite yours as it appears above; otherwise, either "
+				+ "edit your question or report a new question using the REPORT "
+				+ "button below.";
+		return suggestion;
+	}
+	
+	/**
+	 * This method generates answer for a specific question.
+	 * @param inputQuestion
+	 * @return an array of matched questions
+	 */
+	private String getAnswer(String inputQuestion) {
+		final String NOTFOUND = "Sorry, I cannot answer your question right "
+				+ "now because it is not in the database. I will try to update"
+				+ " it as soon as possible.";
+		final String TOOBROAD = "Your question is too broad, could you make it "
+				+ "clearer?";
+		ArrayList<String> processedQuestion = textProcessing(inputQuestion);
+		ArrayList<Integer> matchedID = new ArrayList<Integer>();
+		ArrayList<Integer> nearlyMatchedID = new ArrayList<Integer>();
+		ArrayList<Integer> backwardMatchedID = new ArrayList<Integer>();
+		matchedQuestions = new ArrayList<String>();
+		String answer = "";
+		
+		//find matched questions
+		for(int i = 0; i < processedQuestionList.size(); i++) {
+			ArrayList<String> question = processedQuestionList.get(i);
+			double forwardPercentage = getPercentage(processedQuestion, question);
+			double backwardPercentage = getPercentage(question, processedQuestion);
+			if (Math.abs(Math.min(forwardPercentage, backwardPercentage) - 1) < EPSILON) {
+				//If the input matches a question 100%
+				matchedID.clear();
+				matchedID.add(i);
+				break;
+			}
+			if (forwardPercentage > 0.8) {
+				matchedID.add(i);
+			}
+			else if (forwardPercentage > 0.6) {
+				nearlyMatchedID.add(i);
+			}
+			else if (backwardPercentage > 0.8) {
+				backwardMatchedID.add(i);
+			}
+		}
+		
+		//Get answer
+		if (matchedID.size() > 0) {
+			addQuestions(matchedID, matchedQuestions);
+			if (matchedQuestions.size() == 1) {
+				answer = DataProcessor.getAnswer(matchedQuestions.get(0));
+			}
+			else if (matchedQuestions.size() <= 5) {
+				answer = getSuggestions(matchedQuestions);
+			}
+			else {
+				answer = TOOBROAD;
+			}
+		}
+		else if (nearlyMatchedID.size() > 0) {
+			addQuestions(nearlyMatchedID, matchedQuestions);
+			if (matchedQuestions.size() <= 5) {
+				answer = getSuggestions(matchedQuestions);
+			}
+			else {
+				answer = TOOBROAD;
+			}
+		}
+		else if (backwardMatchedID.size() > 0) {
+			addQuestions(backwardMatchedID, matchedQuestions);
+			if (matchedQuestions.size() <= 5) {
+				answer = getSuggestions(matchedQuestions);
+			}
+			else {
+				answer = TOOBROAD;
+			}
+		}
+		else {
+			answer = NOTFOUND;
+			reportNewQuestion(inputQuestion);
+		}
+		return answer;
+	}
+	
+}

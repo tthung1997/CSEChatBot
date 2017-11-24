@@ -1,0 +1,458 @@
+import java.util.*;
+
+import org.apache.log4j.Logger;
+
+import java.sql.*;
+
+/**
+ * This is a collection of utility methods that define a general API for
+ * interacting with the database supporting this application.
+ * @author Group 11 CSCE 361
+ * @date Fall 2017
+ */
+public class DataProcessor {
+	
+	private static final String url = "jdbc:mysql://cse.unl.edu:3306/ziyunw";
+	private static final String username = "ziyunw";
+	private static final String password = "I_Uv4Z";
+	private static org.apache.log4j.Logger log = Logger.getLogger(DataProcessor.class);
+	
+	/**
+	 * This method creates the connection with the database
+	 * @return connection
+	 */
+	static public Connection getConnection() {
+		try {
+			Class.forName("com.mysql.jdbc.Driver").newInstance();
+		} catch (InstantiationException e) {
+			System.out.println("InstantiationException: ");
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			System.out.println("IllegalAccessException: ");
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		} catch (ClassNotFoundException e) {
+			System.out.println("ClassNotFoundException: ");
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		
+		Connection conn = null;
+
+		try {
+			conn = DriverManager.getConnection(
+					DataProcessor.url, DataProcessor.username, DataProcessor.password);
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		
+		return conn;
+	}
+	
+	/**
+	 * This method returns a list of all questions from the database
+	 * @return list of questions
+	 */
+	public static ArrayList<String> getQuestions() {
+		Connection conn = DataProcessor.getConnection();
+		ArrayList<String> questions = new ArrayList<String>();
+		PreparedStatement ps;
+    	ResultSet rs;
+    	try {
+    		String query = "SELECT Question FROM QA";
+    		ps = conn.prepareStatement(query);
+    		rs = ps.executeQuery();
+    		while (rs.next()) {
+    			questions.add(rs.getString("Question"));
+    		}
+    		ps.close();
+    		rs.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+		return questions;
+	}
+	
+	/**
+	 * This method returns a list of all reports from the database
+	 * @return list of reports
+	 */
+	public static ArrayList<Report> getReports() {
+		Connection conn = DataProcessor.getConnection();
+		ArrayList<Report> reports = new ArrayList<Report>();
+		PreparedStatement ps;
+    	ResultSet rs;
+    	try {
+    		String query = "SELECT * FROM Reports";
+    		ps = conn.prepareStatement(query);
+    		rs = ps.executeQuery();
+    		while (rs.next()) {
+    			reports.add(new Report(rs.getInt("ReportID"), rs.getInt("UserID"), 
+    					rs.getString("Report")));
+    		}
+    		ps.close();
+    		rs.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+		return reports;
+	}
+	
+	/**
+	 * This method returns a report from the database
+	 * @return list of reports
+	 */
+	public static Report getReport() {
+		Connection conn = DataProcessor.getConnection();
+		Report report;
+		PreparedStatement ps;
+    	ResultSet rs;
+    	try {
+    		String query = "SELECT * FROM Reports ORDER BY ReportID DESC LIMIT 1";
+    		ps = conn.prepareStatement(query);
+    		rs = ps.executeQuery();
+    		while (rs.next()) {
+    			report = new Report(rs.getInt("ReportID"), rs.getInt("UserID"), 
+    					rs.getString("Report"));
+    		}
+    		ps.close();
+    		rs.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+		return reports;
+	}
+	
+	/**
+	 * This method retrieves the answer of a specific question
+	 * @param question
+	 * @return answer
+	 */
+	public static String getAnswer(String question) {
+		Connection conn = DataProcessor.getConnection();
+		String answer = "";
+		PreparedStatement ps;
+    	ResultSet rs;
+    	try {
+    		String query = "SELECT Answer FROM QA WHERE Question = ?";
+    		ps = conn.prepareStatement(query);
+    		ps.setString(1, question);
+    		rs = ps.executeQuery();
+    		if (rs.next()) {
+    			answer = rs.getString("Answer");
+    		}
+    		ps.close();
+    		rs.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+		return answer;
+	}
+	
+	/**
+	 * This method inserts a new question along with its answer to the databse
+	 * @param question
+	 * @param answer
+	 */
+	public static void insertQA(String question, String answer) {
+		Connection conn = DataProcessor.getConnection();
+		PreparedStatement ps;
+    	try {
+    		String insertQA = "INSERT INTO QA (Question, Answer) VALUES (?, ?)";
+    		ps = conn.prepareStatement(insertQA);
+    		ps.setString(1, question);
+    		ps.setString(2, answer);
+    		ps.executeUpdate();
+    		ps.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+	}
+	
+	/**
+	 * This method inserts a report from a specific user to the database
+	 * @param username
+	 * @param report
+	 */
+	public static void insertReport(String username, String report) {
+		Connection conn = DataProcessor.getConnection();
+		PreparedStatement ps;
+    	try {
+    		String insertQA = "INSERT INTO Reports VALUES (NULL, ?, ?)";
+    		ps = conn.prepareStatement(insertQA);
+    		ps.setInt(1, getUserID(username));
+    		ps.setString(2, report);
+    		ps.executeUpdate();
+    		ps.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+	}
+	
+	/**
+	 * This method retrieves the userID giving the username
+	 * @param username
+	 * @return userID
+	 */
+	public static int getUserID(String username) {
+		Connection conn = DataProcessor.getConnection();
+		int userID = -1;
+		PreparedStatement ps;
+    	ResultSet rs;
+    	try {
+    		String query = "SELECT UserID FROM Accounts WHERE Username = ?";
+    		ps = conn.prepareStatement(query);
+    		ps.setString(1, username);
+    		rs = ps.executeQuery();
+    		if (rs.next()) {
+    			userID = rs.getInt("UserID");
+    		}
+    		ps.close();
+    		rs.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+		return userID;
+	}
+	
+	/**
+	 * This method retrieves the username giving the userID
+	 * @param userID
+	 * @return username
+	 */
+	public static String getUsername(int userID) {
+		Connection conn = DataProcessor.getConnection();
+		String username = "";
+		PreparedStatement ps;
+    	ResultSet rs;
+    	try {
+    		String query = "SELECT Username FROM Accounts WHERE UserID = ?";
+    		ps = conn.prepareStatement(query);
+    		ps.setInt(1, userID);
+    		rs = ps.executeQuery();
+    		if (rs.next()) {
+    			username = rs.getString("Username");
+    		}
+    		ps.close();
+    		rs.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+		return username;
+	}
+	
+	/**
+	 * This method retrieves the password of a specific username
+	 * @param username
+	 * @return password
+	 */
+	public static String getPassword(String username) {
+		Connection conn = DataProcessor.getConnection();
+		String password = "";
+		PreparedStatement ps;
+    	ResultSet rs;
+    	try {
+    		String query = "SELECT Password FROM Accounts WHERE Username = ?";
+    		ps = conn.prepareStatement(query);
+    		ps.setString(1, username);
+    		rs = ps.executeQuery();
+    		if (rs.next()) {
+    			password = rs.getString("Password");
+    		}
+    		else {
+    			password = "Username not found";
+    		}
+    		ps.close();
+    		rs.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+		return password;
+	}
+	
+	/**
+	 * This method retrieves the role of user
+	 * @param username
+	 * @return role
+	 */
+	public static String getRole(String username) {
+		Connection conn = DataProcessor.getConnection();
+		String role = "";
+		PreparedStatement ps;
+    	ResultSet rs;
+    	try {
+    		String query = "SELECT Role FROM Accounts WHERE Username = ?";
+    		ps = conn.prepareStatement(query);
+    		ps.setString(1, username);
+    		rs = ps.executeQuery();
+    		if (rs.next()) {
+    			role = rs.getString("Role");
+    		}
+    		ps.close();
+    		rs.close();
+    	} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+		return role;
+	}
+	
+	/**
+	 * This method removes a report from the database.
+	 * @param id 
+	 */
+	public static void removeReport(int id) {
+		Connection conn = DataProcessor.getConnection();
+		PreparedStatement ps;
+		
+		try {
+			String delete = "DELETE FROM Reports WHERE ReportID = ?";
+			ps = conn.prepareStatement(delete);
+			ps.setInt(1,  id);
+			ps.executeUpdate();
+			ps.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+	}
+	
+	/**
+	 * This method removes a question along with its answer from 
+	 * the database.
+	 * @param question
+	 */
+	public static void removeQuestion(String question) {
+		Connection conn = DataProcessor.getConnection();
+		PreparedStatement ps;
+		
+		try {
+			String delete = "DELETE FROM QA WHERE Question = ?";
+			ps = conn.prepareStatement(delete);
+			ps.setString(1,  question);
+			ps.executeUpdate();
+			ps.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+	}
+	
+	/**
+	 * This method updates a question in the database.
+	 * @param id
+	 * @param question
+	 * @param answer
+	 */
+	public static void updateQuestion(int id, String question, String answer) {
+		Connection conn = DataProcessor.getConnection();
+		PreparedStatement ps;
+		
+		try {
+			String update = "UPDATE QA SET Question = ?, Answer = ? WHERE QuestionID = ?";
+			ps = conn.prepareStatement(update);
+			ps.setString(1, question);
+			ps.setString(2, answer);
+			ps.setInt(3, id);
+			ps.executeUpdate();
+			ps.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+			throw new RuntimeException(e);
+		}
+		
+		try {
+			if (conn != null)
+				conn.close();
+		} catch (SQLException e) {
+			log.error("SQLException: ", e);
+		}
+	}
+	
+}
+

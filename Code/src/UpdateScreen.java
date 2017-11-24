@@ -3,9 +3,13 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.DefaultTableModel;
 
 /**
  * This class implements the Update Screen frame with all components.
@@ -18,6 +22,9 @@ public class UpdateScreen extends JFrame implements ActionListener {
 	private static final String CHAT 	= "chat";
 	private static final String REPORT 	= "report";
 	private static final String UPDATE 	= "update";
+	private static final String UPDATEM = "updateM";
+	private static final String INSERT 	= "insert";
+	private static final String DELETE 	= "delete";
 	
 	//Instances of other screens
 	private ReportScreen 		reportScr;
@@ -26,10 +33,10 @@ public class UpdateScreen extends JFrame implements ActionListener {
 	//Java GUI components
 	private JTextArea 			questionBox;
 	private JTextArea 			answerBox;
-	private JButton 			chatButton;
-	private JButton 			updateButton;
-	private JButton 			reportButton;
 	private JLabel 				message;
+	private JLabel 				messageM;
+	private JTabbedPane			tabbedPane;
+	private JTable				table;	
 	
 	/**
 	 * This constructor creates Update Screen Frame
@@ -55,23 +62,53 @@ public class UpdateScreen extends JFrame implements ActionListener {
 		picLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		panel.add(picLabel, BorderLayout.WEST);
 		
+		//Message Label
+        message = new JLabel(" ");
+        message.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        //Message managing Label
+        messageM = new JLabel(" ");
+        messageM.setAlignmentX(Component.CENTER_ALIGNMENT);
+		
+		//Tabbed pane
+		tabbedPane = new JTabbedPane();
+		tabbedPane.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+		tabbedPane.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent arg0) {
+				message.setText(" ");
+				messageM.setText(" ");
+			}
+		});
+		panel.add(tabbedPane, BorderLayout.CENTER);
+		
 		//Update panel
 		JPanel updatePanel = new JPanel();
 		updatePanel.setLayout(new BorderLayout());
-		updatePanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+		updatePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		tabbedPane.addTab("UPDATE", updatePanel);
 		
 		//Chat button
-		chatButton = new JButton("RETURN TO CHAT");
+		JButton insertButton = new JButton("INSERT");
+		insertButton.setPreferredSize(new Dimension(90, 40));
+		insertButton.setActionCommand(INSERT);
+        insertButton.addActionListener(this);
+		
+		//Chat button
+		JButton chatButton = new JButton("CHAT");
+		chatButton.setPreferredSize(new Dimension(90, 40));
 		chatButton.setActionCommand(CHAT);
         chatButton.addActionListener(this);
         
         //Update button
-        updateButton = new JButton("UPDATE");
+        JButton updateButton = new JButton("UPDATE");
+        updateButton.setPreferredSize(new Dimension(90, 40));
         updateButton.setActionCommand(UPDATE);
         updateButton.addActionListener(this);
         
         //Report button
-		reportButton = new JButton("REPORT");
+		JButton reportButton = new JButton("REPORT");
+		reportButton.setPreferredSize(new Dimension(90, 40));
 		reportButton.setActionCommand(REPORT);
 		reportButton.addActionListener(this);
         
@@ -109,26 +146,102 @@ public class UpdateScreen extends JFrame implements ActionListener {
         SpringUtilities.makeCompactGrid(inputPanel, 2, 2, 6, 6, 20, 10);
         updatePanel.add(inputPanel, BorderLayout.CENTER);
         
-        //Message Label
-        message = new JLabel(" ");
-        message.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
         //Action panel
         JPanel actionPanel = new JPanel();
         actionPanel.setLayout(new BoxLayout(actionPanel, BoxLayout.Y_AXIS));
         actionPanel.add(message);
+        updatePanel.add(actionPanel, BorderLayout.SOUTH);
         
         //button panel
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout());
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        buttonPanel.add(insertButton);
         buttonPanel.add(updateButton);
         buttonPanel.add(chatButton);
         buttonPanel.add(reportButton);
         buttonPanel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
         actionPanel.add(buttonPanel);
         
-        updatePanel.add(actionPanel, BorderLayout.SOUTH);
-        panel.add(updatePanel, BorderLayout.CENTER);
+        //Manage panel
+        JPanel managePanel = new JPanel();
+        managePanel.setLayout(new BorderLayout());
+		managePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		tabbedPane.addTab("MANAGE", managePanel);
+        
+		//Display table
+		table = new JTable() { 
+			public boolean isCellEditable(int row, int column) {                
+                return false;               
+			}
+  			public String getToolTipText(MouseEvent e)
+	  	    {
+	  	        int row = rowAtPoint(e.getPoint());
+	  	        int column = columnAtPoint(e.getPoint());
+	  	        if (row < 0 || row >= getRowCount() 
+	  	        		|| column < 0 || column >= getColumnCount()) {
+	  	        	return null;
+	  	        }
+	  	        Object value = getValueAt(row, column);
+	  	        //cut into multiple lines
+	  	        return value == null ? null : 
+	  	        	("<html><p width=\"300\">" + value.toString() + "</p></html>");
+	  	    }
+  		};
+  		table.setModel(new DefaultTableModel(
+  				new Object[][] {
+  				},
+  				new String[] {
+  					"Question"
+  				}
+  			));
+  		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+  		table.getTableHeader().setReorderingAllowed(false);
+  		displayQuestions();
+  		
+  		//JScrollPane
+  		JScrollPane scrollPane = new JScrollPane(table);
+  		table.setFillsViewportHeight(true);
+  		managePanel.add(scrollPane, BorderLayout.CENTER);
+		
+		//Delete button
+  		JButton deleteButton = new JButton("DELETE");
+        deleteButton.setPreferredSize(new Dimension(90, 40));
+        deleteButton.setActionCommand(DELETE);
+        deleteButton.addActionListener(this);
+        
+        //Update button
+  		JButton updateMButton = new JButton("UPDATE");
+        updateMButton.setPreferredSize(new Dimension(90, 40));
+        updateMButton.setActionCommand(UPDATEM);
+        updateMButton.addActionListener(this);
+        
+        //Return button for manage
+        JButton returnMButton = new JButton("CHAT");
+        returnMButton.setPreferredSize(new Dimension(90, 40));
+        returnMButton.setActionCommand(CHAT);
+        returnMButton.addActionListener(this);
+        
+        //Report button
+  		JButton reportMButton = new JButton("REPORT");
+  		reportMButton.setPreferredSize(new Dimension(90, 40));
+  		reportMButton.setActionCommand(REPORT);
+  		reportMButton.addActionListener(this);
+  		
+  		//button panel for managing
+        JPanel buttonMPanel = new JPanel();
+        buttonMPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        buttonMPanel.add(updateMButton);
+        buttonMPanel.add(deleteButton);
+        buttonMPanel.add(returnMButton);
+        buttonMPanel.add(reportMButton);
+        buttonMPanel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+        
+        //Action managing panel
+        JPanel actionMPanel = new JPanel();
+        actionMPanel.setLayout(new BoxLayout(actionMPanel, BoxLayout.Y_AXIS));
+        actionMPanel.add(messageM);
+        actionMPanel.add(buttonMPanel);
+        managePanel.add(actionMPanel, BorderLayout.SOUTH);
         
 		contentPane.add(panel);
 		pack();
@@ -139,8 +252,9 @@ public class UpdateScreen extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
+		DefaultTableModel model = (DefaultTableModel)table.getModel();
 		
-		if (UPDATE.equals(cmd)) {
+		if (INSERT.equals(cmd)) {
 			message.setText(" ");
 			String question = questionBox.getText().trim();
 			String answer = answerBox.getText().trim();
@@ -155,15 +269,71 @@ public class UpdateScreen extends JFrame implements ActionListener {
 			else {
 				DataProcessor.insertQA(question, answer);
 				chatScr.getQuestionList();
-				message.setText("Successfully updated.");
+				message.setText("Successfully inserted.");
 				questionBox.setText("");
 				answerBox.setText("");
+				Object[] row = new Object[1];
+				row[0] = question;
+				model.addRow(row);
+			}
+		}
+		else if (UPDATE.equals(cmd)) {
+			int index = table.getSelectedRow();
+			if (index == -1) {
+				message.setText("No row is selected.");
+			}
+			else {
+				message.setText(" ");
+				String question = questionBox.getText().trim();
+				String answer = answerBox.getText().trim();
+				if (question.length() < 1) {
+					message.setText("Question cannot be empty.");
+					questionBox.setText("");
+				}
+				else if (answer.length() < 1) {
+					message.setText("Answer cannot be empty.");
+					answerBox.setText("");
+				}
+				else {
+					String oldQuestion = model.getValueAt(index, 0).toString();
+					DataProcessor.updateQuestion(oldQuestion, question, answer);
+					chatScr.getQuestionList();
+					message.setText("Successfully updated.");
+					questionBox.setText("");
+					answerBox.setText("");
+					model.setValueAt(question, index, 0);
+				}
+			}
+		}
+		else if (UPDATEM.equals(cmd)) {
+			int index = table.getSelectedRow();
+			if (index == -1) {
+				messageM.setText("No row is selected.");
+			}
+			else {
+				String question = model.getValueAt(index, 0).toString();
+				questionBox.setText(question);
+				answerBox.setText(DataProcessor.getAnswer(question));
+				tabbedPane.setSelectedIndex(0);
+			}
+		}
+		else if (DELETE.equals(cmd)) {
+			int index = table.getSelectedRow();
+			if (index == -1) {
+				messageM.setText("No row is selected.");
+			}
+			else {
+				String question = model.getValueAt(index, 0).toString();
+				DataProcessor.removeQuestion(question);
+				model.removeRow(index);
 			}
 		}
 		else if (CHAT.equals(cmd)) {
 			message.setText(" ");
 			questionBox.setText("");
 			answerBox.setText("");
+			table.clearSelection();
+			tabbedPane.setSelectedIndex(0);
 			this.setVisible(false);
 			chatScr.setVisible(true);
 		}
@@ -171,6 +341,8 @@ public class UpdateScreen extends JFrame implements ActionListener {
 			message.setText(" ");
 			questionBox.setText("");
 			answerBox.setText("");
+			table.clearSelection();
+			tabbedPane.setSelectedIndex(0);
 			this.setVisible(false);
 			reportScr.appearFrom(this);
 		}
@@ -188,6 +360,21 @@ public class UpdateScreen extends JFrame implements ActionListener {
 	 */
 	public void setChatScr(ChatScreen chatScr) {
 		this.chatScr = chatScr;
+	}
+	
+
+	/**
+	 * This method retrieves all questions to display on the table
+	 */
+	private void displayQuestions() {
+		ArrayList<String> questions = DataProcessor.getQuestions();
+		DefaultTableModel model = (DefaultTableModel)table.getModel();
+		model.setRowCount(0);
+		Object[] row = new Object[1];
+		for(String question : questions) {
+			row[0] = question;
+			model.addRow(row);
+		}
 	}
 	
 }

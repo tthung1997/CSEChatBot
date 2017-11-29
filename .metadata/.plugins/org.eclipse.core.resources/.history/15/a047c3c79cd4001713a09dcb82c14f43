@@ -266,9 +266,6 @@ public class UpdateScreen extends JFrame implements ActionListener {
 				message.setText("Answer cannot be empty.");
 				answerBox.setText("");
 			}
-			else if (!DataProcessor.getAnswer(question).equals("")) {
-				message.setText("This question has already existed.");
-			}
 			else {
 				DataProcessor.insertQA(question, answer);
 				chatScr.getQuestionList();

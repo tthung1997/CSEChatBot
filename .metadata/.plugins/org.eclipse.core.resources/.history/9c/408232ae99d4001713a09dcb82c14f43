@@ -79,7 +79,6 @@ public class DataProcessor {
 		} catch (SQLException e) {
 			log.error("SQLException: ", e);
 		}
-		Collections.sort(questions, String.CASE_INSENSITIVE_ORDER);
 		return questions;
 	}
 	

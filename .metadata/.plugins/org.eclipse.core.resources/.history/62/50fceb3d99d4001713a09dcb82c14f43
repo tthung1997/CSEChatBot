@@ -266,16 +266,15 @@ public class UpdateScreen extends JFrame implements ActionListener {
 				message.setText("Answer cannot be empty.");
 				answerBox.setText("");
 			}
-			else if (!DataProcessor.getAnswer(question).equals("")) {
-				message.setText("This question has already existed.");
-			}
 			else {
 				DataProcessor.insertQA(question, answer);
 				chatScr.getQuestionList();
 				message.setText("Successfully inserted.");
 				questionBox.setText("");
 				answerBox.setText("");
-				displayQuestions();
+				Object[] row = new Object[1];
+				row[0] = question;
+				model.addRow(row);
 			}
 		}
 		else if (UPDATE.equals(cmd)) {
@@ -302,7 +301,7 @@ public class UpdateScreen extends JFrame implements ActionListener {
 					message.setText("Successfully updated.");
 					questionBox.setText("");
 					answerBox.setText("");
-					displayQuestions();
+					model.setValueAt(question, index, 0);
 				}
 			}
 		}
@@ -326,7 +325,7 @@ public class UpdateScreen extends JFrame implements ActionListener {
 			else {
 				String question = model.getValueAt(index, 0).toString();
 				DataProcessor.removeQuestion(question);
-				displayQuestions();
+				model.removeRow(index);
 			}
 		}
 		else if (CHAT.equals(cmd)) {

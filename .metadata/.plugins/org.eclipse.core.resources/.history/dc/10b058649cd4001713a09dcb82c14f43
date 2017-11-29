@@ -32,6 +32,7 @@ public class Driver {
 		
 		//Start the program by activate the login screen
 		loginScr.setVisible(true);
+//		reportScr.setVisible(true);
 		
 	}
 

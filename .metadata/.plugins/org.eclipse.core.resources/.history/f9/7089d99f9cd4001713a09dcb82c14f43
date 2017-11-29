@@ -31,7 +31,11 @@ public class Driver {
 		reportScr.setLoginScr(loginScr);
 		
 		//Start the program by activate the login screen
-		loginScr.setVisible(true);
+//		loginScr.setVisible(true);
+//		reportScr.setVisible(true);
+		if (DataProcessor.getAnswer("alo") == null)
+			System.out.println("OK");
+		else System.out.println("O");
 		
 	}
 

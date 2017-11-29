@@ -325,7 +325,7 @@ public class ChatScreen extends JFrame implements ActionListener {
 				+ "now because it is not in the database. I will try to update"
 				+ " it as soon as possible.";
 		final String TOOBROAD = "Your question is too broad, could you make it "
-				+ "more clear?";
+				+ "clearer?";
 		ArrayList<String> processedQuestion = textProcessing(inputQuestion);
 		ArrayList<Integer> matchedID = new ArrayList<Integer>();
 		ArrayList<Integer> nearlyMatchedID = new ArrayList<Integer>();
